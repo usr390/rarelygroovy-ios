@@ -1,0 +1,587 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */; };
+		B7D498772D8A3482007DC1D7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498762D8A3482007DC1D7 /* ContentView.swift */; };
+		B7D498792D8A3484007DC1D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7D498782D8A3484007DC1D7 /* Assets.xcassets */; };
+		B7D4987C2D8A3484007DC1D7 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7D4987B2D8A3484007DC1D7 /* Preview Assets.xcassets */; };
+		B7D498862D8A3484007DC1D7 /* rarelygroovyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498852D8A3484007DC1D7 /* rarelygroovyTests.swift */; };
+		B7D498902D8A3484007DC1D7 /* rarelygroovyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D4988F2D8A3484007DC1D7 /* rarelygroovyUITests.swift */; };
+		B7D498922D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498912D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B7D498822D8A3484007DC1D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B7D498692D8A3481007DC1D7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B7D498702D8A3481007DC1D7;
+			remoteInfo = rarelygroovy;
+		};
+		B7D4988C2D8A3484007DC1D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B7D498692D8A3481007DC1D7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B7D498702D8A3481007DC1D7;
+			remoteInfo = rarelygroovy;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B7D498712D8A3481007DC1D7 /* rarelygroovy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rarelygroovy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyApp.swift; sourceTree = "<group>"; };
+		B7D498762D8A3482007DC1D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B7D498782D8A3484007DC1D7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B7D4987B2D8A3484007DC1D7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		B7D498812D8A3484007DC1D7 /* rarelygroovyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = rarelygroovyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7D498852D8A3484007DC1D7 /* rarelygroovyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyTests.swift; sourceTree = "<group>"; };
+		B7D4988B2D8A3484007DC1D7 /* rarelygroovyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = rarelygroovyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7D4988F2D8A3484007DC1D7 /* rarelygroovyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyUITests.swift; sourceTree = "<group>"; };
+		B7D498912D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B7D4986E2D8A3481007DC1D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B7D4987E2D8A3484007DC1D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B7D498882D8A3484007DC1D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B7D498682D8A3481007DC1D7 = {
+			isa = PBXGroup;
+			children = (
+				B7D498732D8A3481007DC1D7 /* rarelygroovy */,
+				B7D498842D8A3484007DC1D7 /* rarelygroovyTests */,
+				B7D4988E2D8A3484007DC1D7 /* rarelygroovyUITests */,
+				B7D498722D8A3481007DC1D7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B7D498722D8A3481007DC1D7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B7D498712D8A3481007DC1D7 /* rarelygroovy.app */,
+				B7D498812D8A3484007DC1D7 /* rarelygroovyTests.xctest */,
+				B7D4988B2D8A3484007DC1D7 /* rarelygroovyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B7D498732D8A3481007DC1D7 /* rarelygroovy */ = {
+			isa = PBXGroup;
+			children = (
+				B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */,
+				B7D498762D8A3482007DC1D7 /* ContentView.swift */,
+				B7D498782D8A3484007DC1D7 /* Assets.xcassets */,
+				B7D4987A2D8A3484007DC1D7 /* Preview Content */,
+			);
+			path = rarelygroovy;
+			sourceTree = "<group>";
+		};
+		B7D4987A2D8A3484007DC1D7 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				B7D4987B2D8A3484007DC1D7 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		B7D498842D8A3484007DC1D7 /* rarelygroovyTests */ = {
+			isa = PBXGroup;
+			children = (
+				B7D498852D8A3484007DC1D7 /* rarelygroovyTests.swift */,
+			);
+			path = rarelygroovyTests;
+			sourceTree = "<group>";
+		};
+		B7D4988E2D8A3484007DC1D7 /* rarelygroovyUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B7D4988F2D8A3484007DC1D7 /* rarelygroovyUITests.swift */,
+				B7D498912D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift */,
+			);
+			path = rarelygroovyUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B7D498702D8A3481007DC1D7 /* rarelygroovy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7D498952D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovy" */;
+			buildPhases = (
+				B7D4986D2D8A3481007DC1D7 /* Sources */,
+				B7D4986E2D8A3481007DC1D7 /* Frameworks */,
+				B7D4986F2D8A3481007DC1D7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = rarelygroovy;
+			productName = rarelygroovy;
+			productReference = B7D498712D8A3481007DC1D7 /* rarelygroovy.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B7D498802D8A3484007DC1D7 /* rarelygroovyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7D498982D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovyTests" */;
+			buildPhases = (
+				B7D4987D2D8A3484007DC1D7 /* Sources */,
+				B7D4987E2D8A3484007DC1D7 /* Frameworks */,
+				B7D4987F2D8A3484007DC1D7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B7D498832D8A3484007DC1D7 /* PBXTargetDependency */,
+			);
+			name = rarelygroovyTests;
+			productName = rarelygroovyTests;
+			productReference = B7D498812D8A3484007DC1D7 /* rarelygroovyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B7D4988A2D8A3484007DC1D7 /* rarelygroovyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7D4989B2D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovyUITests" */;
+			buildPhases = (
+				B7D498872D8A3484007DC1D7 /* Sources */,
+				B7D498882D8A3484007DC1D7 /* Frameworks */,
+				B7D498892D8A3484007DC1D7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B7D4988D2D8A3484007DC1D7 /* PBXTargetDependency */,
+			);
+			name = rarelygroovyUITests;
+			productName = rarelygroovyUITests;
+			productReference = B7D4988B2D8A3484007DC1D7 /* rarelygroovyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B7D498692D8A3481007DC1D7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					B7D498702D8A3481007DC1D7 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+					B7D498802D8A3484007DC1D7 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = B7D498702D8A3481007DC1D7;
+					};
+					B7D4988A2D8A3484007DC1D7 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = B7D498702D8A3481007DC1D7;
+					};
+				};
+			};
+			buildConfigurationList = B7D4986C2D8A3481007DC1D7 /* Build configuration list for PBXProject "rarelygroovy" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B7D498682D8A3481007DC1D7;
+			productRefGroup = B7D498722D8A3481007DC1D7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B7D498702D8A3481007DC1D7 /* rarelygroovy */,
+				B7D498802D8A3484007DC1D7 /* rarelygroovyTests */,
+				B7D4988A2D8A3484007DC1D7 /* rarelygroovyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B7D4986F2D8A3481007DC1D7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7D4987C2D8A3484007DC1D7 /* Preview Assets.xcassets in Resources */,
+				B7D498792D8A3484007DC1D7 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B7D4987F2D8A3484007DC1D7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B7D498892D8A3484007DC1D7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B7D4986D2D8A3481007DC1D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7D498772D8A3482007DC1D7 /* ContentView.swift in Sources */,
+				B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B7D4987D2D8A3484007DC1D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7D498862D8A3484007DC1D7 /* rarelygroovyTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B7D498872D8A3484007DC1D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7D498902D8A3484007DC1D7 /* rarelygroovyUITests.swift in Sources */,
+				B7D498922D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B7D498832D8A3484007DC1D7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B7D498702D8A3481007DC1D7 /* rarelygroovy */;
+			targetProxy = B7D498822D8A3484007DC1D7 /* PBXContainerItemProxy */;
+		};
+		B7D4988D2D8A3484007DC1D7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B7D498702D8A3481007DC1D7 /* rarelygroovy */;
+			targetProxy = B7D4988C2D8A3484007DC1D7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B7D498932D8A3484007DC1D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B7D498942D8A3484007DC1D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B7D498962D8A3484007DC1D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B7D498972D8A3484007DC1D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B7D498992D8A3484007DC1D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/rarelygroovy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/rarelygroovy";
+			};
+			name = Debug;
+		};
+		B7D4989A2D8A3484007DC1D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/rarelygroovy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/rarelygroovy";
+			};
+			name = Release;
+		};
+		B7D4989C2D8A3484007DC1D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = rarelygroovy;
+			};
+			name = Debug;
+		};
+		B7D4989D2D8A3484007DC1D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = rarelygroovy;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B7D4986C2D8A3481007DC1D7 /* Build configuration list for PBXProject "rarelygroovy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7D498932D8A3484007DC1D7 /* Debug */,
+				B7D498942D8A3484007DC1D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B7D498952D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7D498962D8A3484007DC1D7 /* Debug */,
+				B7D498972D8A3484007DC1D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B7D498982D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7D498992D8A3484007DC1D7 /* Debug */,
+				B7D4989A2D8A3484007DC1D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B7D4989B2D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7D4989C2D8A3484007DC1D7 /* Debug */,
+				B7D4989D2D8A3484007DC1D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B7D498692D8A3481007DC1D7 /* Project object */;
+}
