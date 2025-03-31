@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1BFB1EE5CC854523236F6748 /* Pods_rarelygroovy_rarelygroovyUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C5EBA4BEB7AE8B2192171C9 /* Pods_rarelygroovy_rarelygroovyUITests.framework */; };
+		6078A81FA3B2A7B7538BC537 /* Pods_rarelygroovy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282C4786A73BB88BB6CB7208 /* Pods_rarelygroovy.framework */; };
+		B71DEC942D99BD3F00B468FA /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC932D99BD3F00B468FA /* LoginView.swift */; };
+		B71DEC982D99BD9700B468FA /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC972D99BD9700B468FA /* ProfileView.swift */; };
+		B71DEC9A2D99C2ED00B468FA /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC992D99C2ED00B468FA /* AuthManager.swift */; };
+		B71DEC9C2D9A03C200B468FA /* CustomTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */; };
+		B7261FE42D8CC5DE00AD7DD0 /* iconTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */; };
+		B7261FE62D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */; };
 		B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */; };
 		B7D498772D8A3482007DC1D7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498762D8A3482007DC1D7 /* ContentView.swift */; };
 		B7D498792D8A3484007DC1D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7D498782D8A3484007DC1D7 /* Assets.xcassets */; };
@@ -14,6 +22,21 @@
 		B7D498862D8A3484007DC1D7 /* rarelygroovyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498852D8A3484007DC1D7 /* rarelygroovyTests.swift */; };
 		B7D498902D8A3484007DC1D7 /* rarelygroovyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D4988F2D8A3484007DC1D7 /* rarelygroovyUITests.swift */; };
 		B7D498922D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498912D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift */; };
+		B7D4989F2D8A3765007DC1D7 /* Artists.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D4989E2D8A3765007DC1D7 /* Artists.swift */; };
+		B7D498A32D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498A22D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift */; };
+		B7D498A52D8B62ED007DC1D7 /* ArtistDirectoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498A42D8B62ED007DC1D7 /* ArtistDirectoryView.swift */; };
+		B7F7FF5C2D8DF46600DB3098 /* Font Awesome 6 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = B7F7FF5B2D8DED7800DB3098 /* Font Awesome 6 Brands-Regular-400.otf */; };
+		B7F7FF5F2D8DF49E00DB3098 /* Font Awesome 6 Free-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = B7F7FF5D2D8DF49E00DB3098 /* Font Awesome 6 Free-Regular-400.otf */; };
+		B7F7FF602D8DF49E00DB3098 /* Font Awesome 6 Free-Solid-900.otf in Resources */ = {isa = PBXBuildFile; fileRef = B7F7FF5E2D8DF49E00DB3098 /* Font Awesome 6 Free-Solid-900.otf */; };
+		B7F7FF642D91056000DB3098 /* EventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF632D91056000DB3098 /* EventsView.swift */; };
+		B7F7FF662D91090300DB3098 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF652D91090200DB3098 /* MainTabView.swift */; };
+		B7F7FF682D911FAB00DB3098 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF672D911FAB00DB3098 /* Event.swift */; };
+		B7F7FF6C2D9120D300DB3098 /* Venue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF6B2D9120D300DB3098 /* Venue.swift */; };
+		B7F7FF6E2D9122D900DB3098 /* EventUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF6D2D9122D900DB3098 /* EventUpdate.swift */; };
+		B7F7FF702D91233600DB3098 /* EventsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF6F2D91233600DB3098 /* EventsViewModel.swift */; };
+		B7F7FF742D91256300DB3098 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF732D91256300DB3098 /* EventDetailView.swift */; };
+		B7F7FF762D92014500DB3098 /* Promoter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7FF752D92014500DB3098 /* Promoter.swift */; };
+		BC351C834E8C20652059A099 /* Pods_rarelygroovyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EDB97BA522C156B08BD705F /* Pods_rarelygroovyTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +57,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		282C4786A73BB88BB6CB7208 /* Pods_rarelygroovy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_rarelygroovy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5EDB97BA522C156B08BD705F /* Pods_rarelygroovyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_rarelygroovyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		828614C38D985ECCC76D7634 /* Pods-rarelygroovy-rarelygroovyUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rarelygroovy-rarelygroovyUITests.debug.xcconfig"; path = "Target Support Files/Pods-rarelygroovy-rarelygroovyUITests/Pods-rarelygroovy-rarelygroovyUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		8C5EBA4BEB7AE8B2192171C9 /* Pods_rarelygroovy_rarelygroovyUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_rarelygroovy_rarelygroovyUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B71DEC932D99BD3F00B468FA /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		B71DEC972D99BD9700B468FA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		B71DEC992D99C2ED00B468FA /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBarController.swift; sourceTree = "<group>"; };
+		B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconTest.swift; sourceTree = "<group>"; };
+		B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Font Awesome 5 Brands-Regular-400.otf"; path = "../../Downloads/fontawesome-free-5.15.4-desktop/otfs/Font Awesome 5 Brands-Regular-400.otf"; sourceTree = "<group>"; };
+		B7261FE72D8CCCC600AD7DD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B7D498712D8A3481007DC1D7 /* rarelygroovy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rarelygroovy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyApp.swift; sourceTree = "<group>"; };
 		B7D498762D8A3482007DC1D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -44,6 +78,26 @@
 		B7D4988B2D8A3484007DC1D7 /* rarelygroovyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = rarelygroovyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7D4988F2D8A3484007DC1D7 /* rarelygroovyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyUITests.swift; sourceTree = "<group>"; };
 		B7D498912D8A3484007DC1D7 /* rarelygroovyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		B7D4989E2D8A3765007DC1D7 /* Artists.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Artists.swift; sourceTree = "<group>"; };
+		B7D498A22D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistDirectoryViewModel.swift; sourceTree = "<group>"; };
+		B7D498A42D8B62ED007DC1D7 /* ArtistDirectoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistDirectoryView.swift; sourceTree = "<group>"; };
+		B7F7FF5A2D8DEB6500DB3098 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B7F7FF5B2D8DED7800DB3098 /* Font Awesome 6 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Brands-Regular-400.otf"; sourceTree = "<group>"; };
+		B7F7FF5D2D8DF49E00DB3098 /* Font Awesome 6 Free-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Free-Regular-400.otf"; sourceTree = "<group>"; };
+		B7F7FF5E2D8DF49E00DB3098 /* Font Awesome 6 Free-Solid-900.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Font Awesome 6 Free-Solid-900.otf"; sourceTree = "<group>"; };
+		B7F7FF632D91056000DB3098 /* EventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsView.swift; sourceTree = "<group>"; };
+		B7F7FF652D91090200DB3098 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		B7F7FF672D911FAB00DB3098 /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		B7F7FF6B2D9120D300DB3098 /* Venue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Venue.swift; sourceTree = "<group>"; };
+		B7F7FF6D2D9122D900DB3098 /* EventUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventUpdate.swift; sourceTree = "<group>"; };
+		B7F7FF6F2D91233600DB3098 /* EventsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsViewModel.swift; sourceTree = "<group>"; };
+		B7F7FF732D91256300DB3098 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
+		B7F7FF752D92014500DB3098 /* Promoter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Promoter.swift; sourceTree = "<group>"; };
+		C31F85AE6261102A2759DFC9 /* Pods-rarelygroovyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rarelygroovyTests.release.xcconfig"; path = "Target Support Files/Pods-rarelygroovyTests/Pods-rarelygroovyTests.release.xcconfig"; sourceTree = "<group>"; };
+		D8ACC3A677279F5E0678E159 /* Pods-rarelygroovy.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rarelygroovy.debug.xcconfig"; path = "Target Support Files/Pods-rarelygroovy/Pods-rarelygroovy.debug.xcconfig"; sourceTree = "<group>"; };
+		E18F05E82C4305A8D7C6E39A /* Pods-rarelygroovyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rarelygroovyTests.debug.xcconfig"; path = "Target Support Files/Pods-rarelygroovyTests/Pods-rarelygroovyTests.debug.xcconfig"; sourceTree = "<group>"; };
+		ECC71769AB50DAC9C9635B35 /* Pods-rarelygroovy.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rarelygroovy.release.xcconfig"; path = "Target Support Files/Pods-rarelygroovy/Pods-rarelygroovy.release.xcconfig"; sourceTree = "<group>"; };
+		FCF9BA9637E5F08706A0BDAE /* Pods-rarelygroovy-rarelygroovyUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rarelygroovy-rarelygroovyUITests.release.xcconfig"; path = "Target Support Files/Pods-rarelygroovy-rarelygroovyUITests/Pods-rarelygroovy-rarelygroovyUITests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6078A81FA3B2A7B7538BC537 /* Pods_rarelygroovy.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,6 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC351C834E8C20652059A099 /* Pods_rarelygroovyTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,19 +121,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1BFB1EE5CC854523236F6748 /* Pods_rarelygroovy_rarelygroovyUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		58AFD35E68E1B909D19CFFE7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				282C4786A73BB88BB6CB7208 /* Pods_rarelygroovy.framework */,
+				8C5EBA4BEB7AE8B2192171C9 /* Pods_rarelygroovy_rarelygroovyUITests.framework */,
+				5EDB97BA522C156B08BD705F /* Pods_rarelygroovyTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B7D498682D8A3481007DC1D7 = {
 			isa = PBXGroup;
 			children = (
+				B7261FE72D8CCCC600AD7DD0 /* Info.plist */,
+				B7F7FF5D2D8DF49E00DB3098 /* Font Awesome 6 Free-Regular-400.otf */,
+				B7F7FF5E2D8DF49E00DB3098 /* Font Awesome 6 Free-Solid-900.otf */,
+				B7F7FF5B2D8DED7800DB3098 /* Font Awesome 6 Brands-Regular-400.otf */,
+				B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */,
 				B7D498732D8A3481007DC1D7 /* rarelygroovy */,
 				B7D498842D8A3484007DC1D7 /* rarelygroovyTests */,
 				B7D4988E2D8A3484007DC1D7 /* rarelygroovyUITests */,
 				B7D498722D8A3481007DC1D7 /* Products */,
+				BAC3020B869E1B7572968ED4 /* Pods */,
+				58AFD35E68E1B909D19CFFE7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -94,10 +168,27 @@
 		B7D498732D8A3481007DC1D7 /* rarelygroovy */ = {
 			isa = PBXGroup;
 			children = (
+				B7F7FF5A2D8DEB6500DB3098 /* Info.plist */,
+				B7D498A42D8B62ED007DC1D7 /* ArtistDirectoryView.swift */,
+				B7D498A22D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift */,
 				B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */,
 				B7D498762D8A3482007DC1D7 /* ContentView.swift */,
 				B7D498782D8A3484007DC1D7 /* Assets.xcassets */,
 				B7D4987A2D8A3484007DC1D7 /* Preview Content */,
+				B7D4989E2D8A3765007DC1D7 /* Artists.swift */,
+				B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */,
+				B7F7FF632D91056000DB3098 /* EventsView.swift */,
+				B7F7FF652D91090200DB3098 /* MainTabView.swift */,
+				B7F7FF672D911FAB00DB3098 /* Event.swift */,
+				B7F7FF6B2D9120D300DB3098 /* Venue.swift */,
+				B7F7FF6D2D9122D900DB3098 /* EventUpdate.swift */,
+				B7F7FF6F2D91233600DB3098 /* EventsViewModel.swift */,
+				B7F7FF732D91256300DB3098 /* EventDetailView.swift */,
+				B7F7FF752D92014500DB3098 /* Promoter.swift */,
+				B71DEC932D99BD3F00B468FA /* LoginView.swift */,
+				B71DEC972D99BD9700B468FA /* ProfileView.swift */,
+				B71DEC992D99C2ED00B468FA /* AuthManager.swift */,
+				B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */,
 			);
 			path = rarelygroovy;
 			sourceTree = "<group>";
@@ -127,6 +218,19 @@
 			path = rarelygroovyUITests;
 			sourceTree = "<group>";
 		};
+		BAC3020B869E1B7572968ED4 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				D8ACC3A677279F5E0678E159 /* Pods-rarelygroovy.debug.xcconfig */,
+				ECC71769AB50DAC9C9635B35 /* Pods-rarelygroovy.release.xcconfig */,
+				828614C38D985ECCC76D7634 /* Pods-rarelygroovy-rarelygroovyUITests.debug.xcconfig */,
+				FCF9BA9637E5F08706A0BDAE /* Pods-rarelygroovy-rarelygroovyUITests.release.xcconfig */,
+				E18F05E82C4305A8D7C6E39A /* Pods-rarelygroovyTests.debug.xcconfig */,
+				C31F85AE6261102A2759DFC9 /* Pods-rarelygroovyTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -134,9 +238,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7D498952D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovy" */;
 			buildPhases = (
+				202A55DFE26D408BA5EDAE2C /* [CP] Check Pods Manifest.lock */,
 				B7D4986D2D8A3481007DC1D7 /* Sources */,
 				B7D4986E2D8A3481007DC1D7 /* Frameworks */,
 				B7D4986F2D8A3481007DC1D7 /* Resources */,
+				D29B50CF51B917A268EBE3F2 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -151,6 +257,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7D498982D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovyTests" */;
 			buildPhases = (
+				37E7DAB842B3CC1E536274DF /* [CP] Check Pods Manifest.lock */,
 				B7D4987D2D8A3484007DC1D7 /* Sources */,
 				B7D4987E2D8A3484007DC1D7 /* Frameworks */,
 				B7D4987F2D8A3484007DC1D7 /* Resources */,
@@ -169,9 +276,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7D4989B2D8A3484007DC1D7 /* Build configuration list for PBXNativeTarget "rarelygroovyUITests" */;
 			buildPhases = (
+				C8E58EBEAB41493782AA4FDB /* [CP] Check Pods Manifest.lock */,
 				B7D498872D8A3484007DC1D7 /* Sources */,
 				B7D498882D8A3484007DC1D7 /* Frameworks */,
 				B7D498892D8A3484007DC1D7 /* Resources */,
+				67710DA94B0F42A8579CA2E3 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -231,7 +340,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7F7FF602D8DF49E00DB3098 /* Font Awesome 6 Free-Solid-900.otf in Resources */,
+				B7F7FF5F2D8DF49E00DB3098 /* Font Awesome 6 Free-Regular-400.otf in Resources */,
+				B7F7FF5C2D8DF46600DB3098 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
 				B7D4987C2D8A3484007DC1D7 /* Preview Assets.xcassets in Resources */,
+				B7261FE62D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf in Resources */,
 				B7D498792D8A3484007DC1D7 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -252,13 +365,132 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		202A55DFE26D408BA5EDAE2C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-rarelygroovy-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		37E7DAB842B3CC1E536274DF /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-rarelygroovyTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		67710DA94B0F42A8579CA2E3 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rarelygroovy-rarelygroovyUITests/Pods-rarelygroovy-rarelygroovyUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rarelygroovy-rarelygroovyUITests/Pods-rarelygroovy-rarelygroovyUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-rarelygroovy-rarelygroovyUITests/Pods-rarelygroovy-rarelygroovyUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C8E58EBEAB41493782AA4FDB /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-rarelygroovy-rarelygroovyUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D29B50CF51B917A268EBE3F2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rarelygroovy/Pods-rarelygroovy-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rarelygroovy/Pods-rarelygroovy-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-rarelygroovy/Pods-rarelygroovy-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		B7D4986D2D8A3481007DC1D7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7261FE42D8CC5DE00AD7DD0 /* iconTest.swift in Sources */,
+				B7F7FF742D91256300DB3098 /* EventDetailView.swift in Sources */,
+				B7F7FF6C2D9120D300DB3098 /* Venue.swift in Sources */,
+				B71DEC942D99BD3F00B468FA /* LoginView.swift in Sources */,
+				B7F7FF682D911FAB00DB3098 /* Event.swift in Sources */,
 				B7D498772D8A3482007DC1D7 /* ContentView.swift in Sources */,
+				B7F7FF642D91056000DB3098 /* EventsView.swift in Sources */,
+				B71DEC9A2D99C2ED00B468FA /* AuthManager.swift in Sources */,
+				B71DEC9C2D9A03C200B468FA /* CustomTabBarController.swift in Sources */,
+				B7F7FF662D91090300DB3098 /* MainTabView.swift in Sources */,
+				B71DEC982D99BD9700B468FA /* ProfileView.swift in Sources */,
+				B7F7FF762D92014500DB3098 /* Promoter.swift in Sources */,
+				B7D498A32D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift in Sources */,
 				B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */,
+				B7D4989F2D8A3765007DC1D7 /* Artists.swift in Sources */,
+				B7F7FF702D91233600DB3098 /* EventsViewModel.swift in Sources */,
+				B7D498A52D8B62ED007DC1D7 /* ArtistDirectoryView.swift in Sources */,
+				B7F7FF6E2D9122D900DB3098 /* EventUpdate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,7 +564,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -395,7 +627,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -416,24 +648,30 @@
 		};
 		B7D498962D8A3484007DC1D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D8ACC3A677279F5E0678E159 /* Pods-rarelygroovy.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
+				DEVELOPMENT_TEAM = 9S77TZUXU6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rarelygroovy/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.3.9;
 				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -444,24 +682,30 @@
 		};
 		B7D498972D8A3484007DC1D7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = ECC71769AB50DAC9C9635B35 /* Pods-rarelygroovy.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
+				DEVELOPMENT_TEAM = 9S77TZUXU6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rarelygroovy/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.3.9;
 				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -472,6 +716,7 @@
 		};
 		B7D498992D8A3484007DC1D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E18F05E82C4305A8D7C6E39A /* Pods-rarelygroovyTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -491,6 +736,7 @@
 		};
 		B7D4989A2D8A3484007DC1D7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C31F85AE6261102A2759DFC9 /* Pods-rarelygroovyTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -510,11 +756,13 @@
 		};
 		B7D4989C2D8A3484007DC1D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 828614C38D985ECCC76D7634 /* Pods-rarelygroovy-rarelygroovyUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovyUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -527,11 +775,13 @@
 		};
 		B7D4989D2D8A3484007DC1D7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FCF9BA9637E5F08706A0BDAE /* Pods-rarelygroovy-rarelygroovyUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = saltyairsystems.rarelygroovyUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

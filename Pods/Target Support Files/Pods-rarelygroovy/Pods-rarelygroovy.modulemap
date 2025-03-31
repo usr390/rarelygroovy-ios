@@ -1,0 +1,6 @@
+framework module Pods_rarelygroovy {
+  umbrella header "Pods-rarelygroovy-umbrella.h"
+
+  export *
+  module * { export * }
+}

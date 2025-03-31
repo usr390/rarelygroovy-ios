@@ -1,0 +1,6 @@
+framework module Pods_rarelygroovyTests {
+  umbrella header "Pods-rarelygroovyTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

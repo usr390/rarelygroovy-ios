@@ -11,7 +11,7 @@ import SwiftUI
 struct rarelygroovyApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()  // replaces the default ContentView()
         }
     }
 }
