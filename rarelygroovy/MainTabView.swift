@@ -24,6 +24,12 @@ struct MainTabView: View {
             .tabItem { Label("Artist Directory", systemImage: "music.mic") }
             
             NavigationView {
+                AddEventView() // handles login and profile display based on state
+            }
+            .tag(2)
+            .tabItem { Label("Add Event", systemImage: "plus") }
+            
+            NavigationView {
                 LoginView() // handles login and profile display based on state
                     .navigationBarHidden(true) // hide the header for a centered layout
             }

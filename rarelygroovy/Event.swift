@@ -15,11 +15,12 @@ struct Event: Identifiable, Decodable {
     let promoter: Promoter?
     let promoter2: Promoter?
     let flyer: String?
+    let tickets: String?
     let creationDateTime: String?
     let updates: [EventUpdate]?
 
     enum CodingKeys: String, CodingKey {
-        case _id, tags, venue, date, doorTime, dateTime, cover, artists, promoter, promoter2, flyer, creationDateTime, updates
+        case _id, tags, venue, date, doorTime, dateTime, cover, artists, promoter, promoter2, flyer, tickets, creationDateTime, updates
     }
     
     init(from decoder: Decoder) throws {
@@ -47,6 +48,7 @@ struct Event: Identifiable, Decodable {
         self.promoter = try? container.decode(Promoter.self, forKey: .promoter)
         self.promoter2 = try? container.decode(Promoter.self, forKey: .promoter2)
         self.flyer = try? container.decode(String.self, forKey: .flyer)
+        self.tickets = try? container.decode(String.self, forKey: .tickets)
         self.updates = try? container.decode([EventUpdate].self, forKey: .updates)
     }
 }
@@ -81,3 +83,4 @@ private func decodeDateField(_ container: KeyedDecodingContainer<Event.CodingKey
     // 3) otherwise, nil
     return nil
 }
+

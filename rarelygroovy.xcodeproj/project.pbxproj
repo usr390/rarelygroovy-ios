@@ -13,6 +13,8 @@
 		B71DEC982D99BD9700B468FA /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC972D99BD9700B468FA /* ProfileView.swift */; };
 		B71DEC9A2D99C2ED00B468FA /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC992D99C2ED00B468FA /* AuthManager.swift */; };
 		B71DEC9C2D9A03C200B468FA /* CustomTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */; };
+		B71DECA02D9CA93900B468FA /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DEC9F2D9CA93900B468FA /* SignUpView.swift */; };
+		B71DECA22D9F14B300B468FA /* AddEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DECA12D9F14B300B468FA /* AddEventView.swift */; };
 		B7261FE42D8CC5DE00AD7DD0 /* iconTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */; };
 		B7261FE62D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */; };
 		B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */; };
@@ -65,6 +67,8 @@
 		B71DEC972D99BD9700B468FA /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		B71DEC992D99C2ED00B468FA /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBarController.swift; sourceTree = "<group>"; };
+		B71DEC9F2D9CA93900B468FA /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		B71DECA12D9F14B300B468FA /* AddEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEventView.swift; sourceTree = "<group>"; };
 		B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconTest.swift; sourceTree = "<group>"; };
 		B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Font Awesome 5 Brands-Regular-400.otf"; path = "../../Downloads/fontawesome-free-5.15.4-desktop/otfs/Font Awesome 5 Brands-Regular-400.otf"; sourceTree = "<group>"; };
 		B7261FE72D8CCCC600AD7DD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -189,6 +193,8 @@
 				B71DEC972D99BD9700B468FA /* ProfileView.swift */,
 				B71DEC992D99C2ED00B468FA /* AuthManager.swift */,
 				B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */,
+				B71DEC9F2D9CA93900B468FA /* SignUpView.swift */,
+				B71DECA12D9F14B300B468FA /* AddEventView.swift */,
 			);
 			path = rarelygroovy;
 			sourceTree = "<group>";
@@ -478,6 +484,7 @@
 				B7F7FF6C2D9120D300DB3098 /* Venue.swift in Sources */,
 				B71DEC942D99BD3F00B468FA /* LoginView.swift in Sources */,
 				B7F7FF682D911FAB00DB3098 /* Event.swift in Sources */,
+				B71DECA02D9CA93900B468FA /* SignUpView.swift in Sources */,
 				B7D498772D8A3482007DC1D7 /* ContentView.swift in Sources */,
 				B7F7FF642D91056000DB3098 /* EventsView.swift in Sources */,
 				B71DEC9A2D99C2ED00B468FA /* AuthManager.swift in Sources */,
@@ -487,6 +494,7 @@
 				B7F7FF762D92014500DB3098 /* Promoter.swift in Sources */,
 				B7D498A32D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift in Sources */,
 				B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */,
+				B71DECA22D9F14B300B468FA /* AddEventView.swift in Sources */,
 				B7D4989F2D8A3765007DC1D7 /* Artists.swift in Sources */,
 				B7F7FF702D91233600DB3098 /* EventsViewModel.swift in Sources */,
 				B7D498A52D8B62ED007DC1D7 /* ArtistDirectoryView.swift in Sources */,
@@ -654,7 +662,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
 				DEVELOPMENT_TEAM = 9S77TZUXU6;
 				ENABLE_PREVIEWS = YES;
@@ -688,7 +696,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
 				DEVELOPMENT_TEAM = 9S77TZUXU6;
 				ENABLE_PREVIEWS = YES;

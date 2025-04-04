@@ -1,11 +1,27 @@
-//
-//  LoginView.swift
-//  rarelygroovy
-//
-//  Created by abs on 3/30/25.
-//
-
 import SwiftUI
+
+struct LoginView: View {
+    @ObservedObject var authManager = AuthManager.shared
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        if authManager.user != nil {
+            // User is logged in; show profile view
+            ProfileView()
+        } else {
+            VStack {
+                LoginFormView()
+                NavigationLink(destination: SignUpView()) {
+                    Text("Don't have an account? Sign up")
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                        .underline()
+                }
+                .padding()
+            }
+            .navigationBarHidden(true)
+        }
+    }
+}
 
 struct LoginFormView: View {
     @State private var username = ""
@@ -15,7 +31,12 @@ struct LoginFormView: View {
     
     @Environment(\.colorScheme) var colorScheme
 
-
+    // Computed property to check that both fields have non-empty, trimmed input
+    var isFormValid: Bool {
+        return !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+               !password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             Text("Log in to Rarelygroovy")
@@ -35,6 +56,11 @@ struct LoginFormView: View {
                     .foregroundColor(.red)
             }
             Button(action: {
+                // Prevent request if form is invalid
+                guard isFormValid else {
+                    errorMessage = "Please fill in all fields."
+                    return
+                }
                 isLoading = true
                 Task {
                     do {
@@ -52,25 +78,8 @@ struct LoginFormView: View {
                     .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
                     .cornerRadius(8)
             }
+            .disabled(!isFormValid || isLoading)
         }
         .padding()
     }
-}
-
-struct LoginView: View {
-    @ObservedObject var authManager = AuthManager.shared
-
-    var body: some View {
-        if authManager.user != nil {
-            // user is logged in; show profile with nav title
-            ProfileView()
-        } else {
-            // user is not logged in; show login form without nav bar
-            LoginFormView()
-                .navigationBarHidden(true)
-        }
-    }
-}
-#Preview {
-    LoginView()
 }

@@ -161,10 +161,12 @@ struct ArtistDirectoryView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // 1) Free-text search field with clear button
-                HStack {
+                
+                // 3) Main scrollable list of artists using finalArtists
+                ScrollView {
+                    // 1) Free-text search field with clear button
                     ZStack(alignment: .trailing) {
-                        TextField("Search by name…", text: $searchText)
+                        TextField("Search artists...", text: $searchText)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                         if !searchText.isEmpty {
                             Button {
@@ -177,133 +179,114 @@ struct ArtistDirectoryView: View {
                         }
                     }
                     .padding([.horizontal, .top])
-                }
-                
-                // 2a) Clear All button for genre chips
-                HStack {
-                    Spacer()
-                    Button {
-                        selectedTopLevelGenres.removeAll()
-                    } label: {
+                    
+                    // 2b) Horizontal chips for top-level genres
+                    // Horizontal chips for top-level genres with Clear All chip as left-most chip
+                    ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
-                        }
-                        .foregroundColor(.red)
-                    }
-                    .opacity(selectedTopLevelGenres.isEmpty ? 0 : 1)
-                    .disabled(selectedTopLevelGenres.isEmpty)
-                }
-                .padding(.vertical, 4)
-                .padding(.horizontal)
-                
-                // 2b) Horizontal chips for top-level genres
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(topLevelGenres, id: \.self) { topLevel in
-                            let isSelected = selectedTopLevelGenres.contains(topLevel)
-                            Button {
-                                if isSelected {
-                                    selectedTopLevelGenres.remove(topLevel)
-                                } else {
-                                    selectedTopLevelGenres.insert(topLevel)
+                            // Genre chips
+                            ForEach(topLevelGenres, id: \.self) { topLevel in
+                                let isSelected = selectedTopLevelGenres.contains(topLevel)
+                                Button {
+                                    if isSelected {
+                                        selectedTopLevelGenres.remove(topLevel)
+                                    } else {
+                                        selectedTopLevelGenres.insert(topLevel)
+                                    }
+                                } label: {
+                                    Text(topLevel.capitalized)
+                                        .font(.subheadline)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(isSelected ? Color.primary : Color.gray.opacity(0.3))
+                                        .foregroundColor(isSelected ? Color.black : .primary)
+                                        .cornerRadius(16)
                                 }
-                            } label: {
-                                Text(topLevel.capitalized)
-                                    .font(.subheadline)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(isSelected ? Color.primary : Color.gray.opacity(0.3))
-                                    .foregroundColor(isSelected ? Color.black : .primary)
-                                    .cornerRadius(16)
                             }
                         }
+                        .padding(.horizontal, 8)
                     }
-                    .padding(.leading, 8)
-                }
-                .padding(.bottom, 8)
-                
-                // 2c) Horizontal scroll view for extra filter chips (Random Artist, Timeline, Recently Toured)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        // Random Artist Chip
-                        Button(action: {
-                            isRandomArtistMode.toggle()
-                            if isRandomArtistMode {
-                                randomArtist = filteredArtists.randomElement()
-                            } else {
-                                randomArtist = nil
+                    .padding(.vertical, 8)
+                    
+                    // 2c) Horizontal scroll view for extra filter chips (Random Artist, Timeline, Recently Toured)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            // Random Artist Chip
+                            Button(action: {
+                                isRandomArtistMode.toggle()
+                                if isRandomArtistMode {
+                                    randomArtist = filteredArtists.randomElement()
+                                } else {
+                                    randomArtist = nil
+                                }
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Random Artist")
+                                    Image(systemName: "shuffle")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(isRandomArtistMode ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(isRandomArtistMode ? Color.black : .primary)
+                                .cornerRadius(16)
                             }
-                        }) {
-                            HStack {
-                                Text("Random Artist")
-                                Image(systemName: "shuffle")
-                                    .imageScale(.medium)
+                            
+                            // Timeline Chip
+                            Button(action: {
+                                isTimelineMode.toggle()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Timeline")
+                                    Image(systemName: "arrow.up.arrow.down")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(isTimelineMode ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(isTimelineMode ? Color.black : .primary)
+                                .cornerRadius(16)
                             }
-                            .font(.subheadline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(isRandomArtistMode ? .primary : Color.gray.opacity(0.3))
-                            .foregroundColor(isRandomArtistMode ? .black : .primary)
-                            .cornerRadius(16)
+                            
+                            // Recently Toured Chip
+                            Button(action: {
+                                isRecentlyTouredMode.toggle()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Recently Toured")
+                                    Image(systemName: "bus")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(isRecentlyTouredMode ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(isRecentlyTouredMode ? Color.black : .primary)
+                                .cornerRadius(16)
+                            }
+                            
+                            // Recently Added Chip
+                            Button(action: {
+                                isRecentlyAddedMode.toggle()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Recently Added")
+                                    Image(systemName: "clock")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(isRecentlyAddedMode ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(isRecentlyAddedMode ? Color.black : .primary)
+                                .cornerRadius(16)
+                            }
                         }
-                        
-                        // Timeline Chip
-                        Button(action: {
-                            isTimelineMode.toggle()
-                        }) {
-                            HStack {
-                                Text("Timeline")
-                                Image(systemName: "arrow.up.arrow.down") // SF Symbol for sorting
-                                    .imageScale(.medium)
-                            }
-                            .font(.subheadline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(isTimelineMode ? .primary : Color.gray.opacity(0.3))
-                            .foregroundColor(isTimelineMode ? .black : .primary)
-                            .cornerRadius(16)
-                        }
-                        
-                        // Recently Toured Chip
-                        Button(action: {
-                            isRecentlyTouredMode.toggle()
-                        }) {
-                            HStack {
-                                Text("Recently Toured")
-                                Image(systemName: "bus")
-                                    .imageScale(.medium)
-                            }
-                            .font(.subheadline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(isRecentlyTouredMode ? .primary : Color.gray.opacity(0.3))
-                            .foregroundColor(isRecentlyTouredMode ? .black : .primary)
-                            .cornerRadius(16)
-                        }
-                        // Recently Added Chip
-                        Button(action: {
-                            isRecentlyAddedMode.toggle()
-                        }) {
-                            HStack {
-                                Text("Recently Added")
-                                Image(systemName: "clock")
-                                    .imageScale(.medium)
-                            }
-                            .font(.subheadline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(isRecentlyAddedMode ? .primary : Color.gray.opacity(0.3))
-                            .foregroundColor(isRecentlyAddedMode ? .black : .primary)
-                            .cornerRadius(16)
-                        }
+                        .padding(.horizontal, 8)  // Ensure explicit 8pt padding on left and right
                     }
-                    .padding(.horizontal)
-                }
-                .padding(.bottom, 8)
-                
-                // 3) Main scrollable list of artists using finalArtists
-                ScrollView {
+                    .padding(.bottom, 8)
                     LazyVStack(alignment: .center, spacing: 0) {
                         ForEach(finalArtists) { artist in
                             VStack(alignment: .center, spacing: 8) {
@@ -319,10 +302,11 @@ struct ArtistDirectoryView: View {
                                         .padding([.top, .trailing], 4)
                                 }
                                 // Artist name with location (if not "rgv")
-                                Text(artist.name + (artist.location.lowercased() != "rgv" ? " (\(artist.location))" : ""))
+                                Text(artist.name + (artist.location.uppercased() != "RGV" ? " (\(artist.location.uppercased()))" : ""))
                                     .font(.subheadline)
                                     .frame(maxWidth: .infinity, alignment: .center)
                                 // Prepare display parts
+                                // Prepare parts
                                 let mediumPart = artist.medium ?? ""
                                 let genrePart = artist.genre.joined(separator: " · ")
 
@@ -344,29 +328,31 @@ struct ArtistDirectoryView: View {
                                     return ""
                                 }()
 
-                                // Create a combined string for genre and medium
-                                let genreMediumString: String = {
-                                    var s = ""
-                                    if !genrePart.isEmpty {
-                                        s += genrePart
-                                    }
-                                    if !mediumPart.isEmpty {
-                                        if !s.isEmpty { s += "     " }
-                                        s += mediumPart
-                                    }
-                                    return s
-                                }()
-
                                 // In your view:
                                 VStack(alignment: .center, spacing: 4) {
-                                    if !genreMediumString.isEmpty {
-                                        Text(genreMediumString)
+                                    // Line 1: Genre only
+                                    if !genrePart.isEmpty {
+                                        Text(genrePart)
                                             .font(.subheadline)
                                             .foregroundColor(.secondary)
                                             .multilineTextAlignment(.center)
                                     }
-                                    if !dateRangePart.isEmpty {
-                                        Text(dateRangePart.replacingOccurrences(of: " - ", with: "\u{00A0}-\u{00A0}"))
+                                    
+                                    // Line 2: Medium and Date Range combined
+                                    let mediumDateString: String = {
+                                        var s = ""
+                                        if !mediumPart.isEmpty {
+                                            s += mediumPart
+                                        }
+                                        if !dateRangePart.isEmpty {
+                                            if !s.isEmpty { s += "     " } // extra spacing if both present
+                                            s += dateRangePart.replacingOccurrences(of: " - ", with: "\u{00A0}-\u{00A0}")
+                                        }
+                                        return s
+                                    }()
+                                    
+                                    if !mediumDateString.isEmpty {
+                                        Text(mediumDateString)
                                             .font(.subheadline)
                                             .foregroundColor(.secondary)
                                             .multilineTextAlignment(.center)
@@ -374,7 +360,6 @@ struct ArtistDirectoryView: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 4)
-                                
                                 // Valid links
                                 if let links = artist.links {
                                     let validLinks = links.filter {
@@ -465,6 +450,8 @@ func fontAwesomeIcon(for key: String) -> FontAwesome {
         return .tiktok
     } else if lowerKey.contains("facebook") {
         return .facebook
+    } else if lowerKey.contains("mixcloud") {
+        return .mixcloud
     } else if lowerKey.contains("self") {
         return .globe
     } else if lowerKey.contains("x") {

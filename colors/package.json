@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "get-image-colors": "^4.0.1",
+    "node-vibrant": "^4.0.3"
+  }
+}
