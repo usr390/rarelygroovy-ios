@@ -24,7 +24,9 @@ struct MainTabView: View {
             .tabItem { Label("Artist Directory", systemImage: "music.mic") }
             
             NavigationView {
-                AddEventView() // handles login and profile display based on state
+                AddEventView()
+                    .navigationTitle("Add Event")
+                    .navigationBarTitleDisplayMode(.large)
             }
             .tag(2)
             .tabItem { Label("Add Event", systemImage: "plus") }
@@ -33,7 +35,7 @@ struct MainTabView: View {
                 LoginView() // handles login and profile display based on state
                     .navigationBarHidden(true) // hide the header for a centered layout
             }
-            .tag(2)
+            .tag(3)
             .tabItem { Label("Profile", systemImage: "person") }
         }
         .accentColor(.primary)
@@ -43,7 +45,7 @@ struct MainTabView: View {
                 let dragThreshold: CGFloat = 50
                 withAnimation(.easeInOut(duration: 0.4)) {
                     if value.translation.width < -dragThreshold {
-                        selection = min(selection + 1, 2)
+                        selection = min(selection + 1, 3)
                     } else if value.translation.width > dragThreshold {
                         selection = max(selection - 1, 0)
                     }

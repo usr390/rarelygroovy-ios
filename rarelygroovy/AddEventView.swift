@@ -1,23 +1,13 @@
 import SwiftUI
 
-// MARK: - Models
-
-// Simple model for auto‑complete suggestions.
-struct VenueSuggestion: Decodable, Identifiable {
-    let id = UUID()
-    let name: String
-}
-
 // MARK: - Generic AutoComplete Overlay
-
 struct AutoCompleteOverlay: View {
     @Binding var text: String
     let suggestions: [String]
     let title: String  // Dynamic title parameter
     @Environment(\.dismiss) var dismiss
-    
-    @FocusState private var isTextFieldFocused: Bool  // FocusState variable
 
+    @FocusState private var isTextFieldFocused: Bool
 
     var filteredSuggestions: [String] {
         if text.isEmpty {
@@ -30,14 +20,33 @@ struct AutoCompleteOverlay: View {
     var body: some View {
         NavigationView {
             VStack {
-                TextField("Search...", text: $text)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+                ZStack(alignment: .trailing) {
+                    TextField("Search...", text: $text)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .focused($isTextFieldFocused)
+                        .onAppear {
+                            isTextFieldFocused = true
+                        }
+                    if !text.isEmpty {
+                        Button {
+                            text = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .padding(.trailing, 8)
+                        }
+                    }
+                }
                 List(filteredSuggestions, id: \.self) { suggestion in
                     Text(suggestion)
                         .onTapGesture {
                             text = suggestion
-                            dismiss()
+                            isTextFieldFocused = false
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
                         }
                 }
                 .listStyle(PlainListStyle())
@@ -45,58 +54,400 @@ struct AutoCompleteOverlay: View {
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        // Accept current input and dismiss overlay.
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+// MARK: - Add Event View
+// Custom wrapper for a time picker with 15-minute intervals that works with an optional Date.
+struct OptionalTimeInputView: View {
+    let label: String
+    @Binding var time: Date?
+    @State private var showPicker: Bool = false
+    @State private var tempTime: Date = Date()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // Label with optional marker.
+            (Text("\(label) ")
+                .font(.headline)
+             +
+             Text("(optional)")
+                .italic()
+                .font(.footnote)
+                .foregroundColor(.secondary)
+            )
+            Button(action: {
+                // When tapping, use the existing time or current time as a default.
+                tempTime = time ?? Date()
+                showPicker = true
+            }) {
+                HStack {
+                    if let time = time {
+                        Text(timeFormatted(time))
+                            .foregroundColor(.primary)
+                    } else {
+                        Text("")
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "clock")
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(8)
+            }
+            .sheet(isPresented: $showPicker) {
+                OptionalTimePickerOverlay(time: $time, tempTime: $tempTime, label: label)
+            }
+        }
+    }
+
+    func timeFormatted(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+}
+struct OptionalTimePickerOverlay: View {
+    @Binding var time: Date?
+    @Binding var tempTime: Date
+    let label: String
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                DatePicker("", selection: $tempTime, displayedComponents: .hourAndMinute)
+                    .labelsHidden()
+                    .datePickerStyle(WheelDatePickerStyle())
+                    .environment(\.locale, Locale(identifier: "en_US_POSIX"))
+                    .environment(\.calendar, Calendar(identifier: .gregorian))
+                    .onAppear {
+                        // Optionally adjust default if needed.
+                    }
+                    .padding()
+                Spacer()
+            }
+            .navigationTitle("\(label) Time")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        time = tempTime
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
                 }
             }
         }
     }
 }
 
-// MARK: - Add Event View
+// A simplified auto-complete overlay for venues.
+struct VenueAutoCompleteOverlay: View {
+    @Binding var text: String
+    @Binding var selectedVenue: Venue?
+    let suggestions: [Venue]  // now an array of Venue objects
+    let title: String
+    @Environment(\.dismiss) var dismiss
+    @FocusState private var isTextFieldFocused: Bool
 
+    var filteredSuggestions: [Venue] {
+        if text.isEmpty {
+            return suggestions
+        } else {
+            return suggestions.filter { ($0.name ?? "").lowercased().contains(text.lowercased()) }
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                ZStack(alignment: .trailing) {
+                    TextField("Search...", text: $text)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .focused($isTextFieldFocused)
+                        .onAppear {
+                            isTextFieldFocused = true
+                        }
+                    if !text.isEmpty {
+                        Button {
+                            text = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .padding(.trailing, 8)
+                        }
+                    }
+                }
+                List(filteredSuggestions) { venue in
+                    Text(venue.name ?? "Unknown")
+                        .onTapGesture {
+                            text = venue.name ?? ""
+                            selectedVenue = venue  // <-- assign the full venue object here
+                            // Post selection: update the selected venue.
+                            NotificationCenter.default.post(name: Notification.Name("VenueSelected"), object: venue)
+                            isTextFieldFocused = false
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
+                        }
+                }
+                .listStyle(PlainListStyle())
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+struct PromoterAutoCompleteOverlay: View {
+    @Binding var text: String
+    @Binding var selectedPromoter: Promoter?
+    let suggestions: [Promoter]
+    let title: String
+    @Environment(\.dismiss) var dismiss
+    @FocusState private var isTextFieldFocused: Bool
+
+    var filteredSuggestions: [Promoter] {
+        if text.isEmpty {
+            return suggestions
+        } else {
+            return suggestions.filter { ($0.name ?? "").lowercased().contains(text.lowercased()) }
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                ZStack(alignment: .trailing) {
+                    TextField("Search...", text: $text)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .focused($isTextFieldFocused)
+                        .onAppear {
+                            isTextFieldFocused = true
+                        }
+                    if !text.isEmpty {
+                        Button {
+                            text = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .padding(.trailing, 8)
+                        }
+                    }
+                }
+                List(filteredSuggestions) { promoter in
+                    Text(promoter.name ?? "Unknown")
+                        .onTapGesture {
+                            text = promoter.name ?? ""
+                            selectedPromoter = promoter  // assign full promoter object
+                            isTextFieldFocused = false
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
+                        }
+                }
+                .listStyle(PlainListStyle())
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+struct ArtistAutoCompleteOverlay: View {
+    @Binding var text: String
+    @Binding var selectedArtist: Artist?
+    let suggestions: [Artist]
+    let title: String
+    @Environment(\.dismiss) var dismiss
+    @FocusState private var isTextFieldFocused: Bool
+
+    var filteredSuggestions: [Artist] {
+        if text.isEmpty {
+            return suggestions
+        } else {
+            return suggestions.filter { $0.name.lowercased().contains(text.lowercased()) }
+        }
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                ZStack(alignment: .trailing) {
+                    TextField("Search...", text: $text)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .focused($isTextFieldFocused)
+                        .onAppear {
+                            isTextFieldFocused = true
+                        }
+                    if !text.isEmpty {
+                        Button {
+                            text = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .padding(.trailing, 8)
+                        }
+                    }
+                }
+                List(filteredSuggestions) { artist in
+                    Text(artist.name)
+                        .onTapGesture {
+                            text = artist.name
+                            selectedArtist = artist  // assign the full artist object
+                            isTextFieldFocused = false
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
+                        }
+                }
+                .listStyle(PlainListStyle())
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        isTextFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            dismiss()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Example usage in your AddEventView:
 struct AddEventView: View {
     // Event Fields
     @State private var venueName: String = ""
+    @FocusState private var isVenueFocused: Bool   // Focus state for venue input
     @State private var promoterName: String = ""
-    @State private var city: String = ""
     @State private var eventDate: Date = Date()
-    @State private var doorTime: Date = Date(timeIntervalSince1970: 0) // defaults to 12:00 AM
-    @State private var showTime: Date = Date(timeIntervalSince1970: 0) // defaults to 12:00 AM
+    // Optional time fields: initially nil
+    @State private var doorTime: Date? = nil
+    @State private var showTime: Date? = nil
     @State private var coverText: String = ""
-    @State private var artistNames: [String] = [""]
     @State private var flyerLink: String = ""
     @State private var flyerImage: UIImage? = nil  // Stub for image upload
+    @State private var errorMessage: String? = nil
+    @Environment(\.colorScheme) var colorScheme
+    @ObservedObject var authManager = AuthManager.shared
 
     // Auto-complete overlay triggers
     @State private var showVenueAutoComplete: Bool = false
     @State private var showPromoterAutoComplete: Bool = false
-    // Instead of an array for each artist field, track which artist field is active.
+
+    // Update your state to store Venue objects.
+    @State private var venueSuggestions: [Venue] = []
+    // And add a state variable for the selected venue.
+    @State private var selectedVenue: Venue? = nil  
+    // Update your state to store Venue objects.
+    @State private var promoterSuggestions: [Promoter] = []
+    // And add a state variable for the selected venue.
+    @State private var selectedPromoter: Promoter? = nil
+    @State private var artistSuggestions: [Artist] = []
+    // And add a state variable for the selected venue.
+    @State private var artistNames: [String] = [""]
+    @State private var selectedArtists: [Artist?] = [nil]
     @State private var selectedArtistIndex: Int? = nil
-
-    // Error & points feedback
-    @State private var errorMessage: String?
-    @State private var pointsEarned: Int = 0
-
-    // Hardcoded suggestions for demo purposes.
-    let venueSuggestions = ["Venue One", "Venue Two", "Venue Three", "Awesome Venue", "Cool Venue"]
-    let promoterSuggestions = ["Promoter A", "Promoter B", "Promoter C"]
-    let artistSuggestions = ["Artist X", "Artist Y", "Artist Z"]
 
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 20) {                    
                     // Venue Input with Auto-Complete
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Venue *")
+                            (Text("Venue ")
                                 .font(.headline)
+                             +
+                             Text("*")
+                                .italic()
+                                .foregroundColor(.secondary)
+                            )
                             Spacer()
-                            Text("+10")
-                                .foregroundColor(.green)
-                                .font(.caption)
                         }
-                        TextField("Enter venue name", text: $venueName)
+                        TextField("Venue", text: $venueName)
+                            .focused($isVenueFocused)
+                            .onChange(of: isVenueFocused) { focused in
+                                if focused {
+                                    fetchVenues()
+                                } else {
+                                    // Optionally clear suggestions when focus is lost
+                                    // venueSuggestions = []
+                                }
+                            }
                             .padding()
                             .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
@@ -109,14 +460,17 @@ struct AddEventView: View {
                     // Promoter Input with Auto-Complete
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Promoter")
+                            (Text("Promoter ")
                                 .font(.headline)
+                             +
+                             Text("(optional)")
+                                .italic()
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                            )
                             Spacer()
-                            Text("+5")
-                                .foregroundColor(.green)
-                                .font(.caption)
                         }
-                        TextField("Enter promoter name", text: $promoterName)
+                        TextField("Promoter", text: $promoterName)
                             .padding()
                             .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
@@ -127,49 +481,46 @@ struct AddEventView: View {
                     .padding(.horizontal)
                     
                     // Event Date Picker
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Event Date *")
+                    VStack(alignment: .leading, spacing: 4) {
+                        (Text("Date ")
                             .font(.headline)
-                        DatePicker("Select date", selection: $eventDate, in: Date()..., displayedComponents: .date)
+                         +
+                         Text("*")
+                            .italic()
+                            .foregroundColor(.secondary)
+                        )
+                        DatePicker("", selection: $eventDate, in: Date()..., displayedComponents: .date)
                             .labelsHidden()
+                            .datePickerStyle(CompactDatePickerStyle())
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal)
                     
-                    // Time Inputs for Door and Show Time (vertical layout)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Times (optional)")
-                            .font(.headline)
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Door Time")
-                                .font(.caption)
-                            DatePicker("", selection: $doorTime, displayedComponents: .hourAndMinute)
-                                .labelsHidden()
-                                .datePickerStyle(WheelDatePickerStyle())
-                            Text("Show Time")
-                                .font(.caption)
-                            DatePicker("", selection: $showTime, displayedComponents: .hourAndMinute)
-                                .labelsHidden()
-                                .datePickerStyle(WheelDatePickerStyle())
-                        }
-                        Text("Default picker time is 12:00 AM")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                    // Time Inputs using our custom OptionalTimeInputView
+                    HStack(alignment: .top, spacing: 16) {
+                        OptionalTimeInputView(label: "Doors", time: $doorTime)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        OptionalTimeInputView(label: "Show", time: $showTime)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal)
                     
                     // Cover Input
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Cover (optional)")
+                            (Text("Cover ")
                                 .font(.headline)
+                             +
+                             Text("(optional)")
+                                .italic()
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                            )
                             Spacer()
-                            Text("+3")
-                                .foregroundColor(.green)
-                                .font(.caption)
                         }
                         HStack {
                             Text("$")
-                            TextField("Enter cover amount", text: $coverText)
+                            TextField("Cover", text: $coverText)
                                 .keyboardType(.numberPad)
                                 .onChange(of: coverText) { newValue in
                                     coverText = String(newValue.prefix(3).filter { "0123456789".contains($0) })
@@ -183,11 +534,17 @@ struct AddEventView: View {
                     
                     // Artists Input with dynamic fields and auto-complete using full-screen overlay
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Artists (optional)")
+                        (Text("Artists ")
                             .font(.headline)
+                         +
+                         Text("(optional)")
+                            .italic()
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        )
                         ForEach(artistNames.indices, id: \.self) { index in
                             HStack {
-                                TextField("Enter artist name", text: $artistNames[index])
+                                TextField("Artist", text: $artistNames[index])
                                     .padding()
                                     .background(Color(UIColor.secondarySystemBackground))
                                     .cornerRadius(8)
@@ -197,7 +554,6 @@ struct AddEventView: View {
                                 if artistNames.count > 1 {
                                     Button(action: {
                                         artistNames.remove(at: index)
-                                        // Adjust selectedArtistIndex if necessary.
                                         if let selected = selectedArtistIndex, selected == index {
                                             selectedArtistIndex = nil
                                         } else if let selected = selectedArtistIndex, selected > index {
@@ -205,38 +561,59 @@ struct AddEventView: View {
                                         }
                                     }) {
                                         Image(systemName: "minus.circle.fill")
-                                            .foregroundColor(.red)
+                                            .background(colorScheme == .dark ? Color.black : Color.white)
+                                            .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                                     }
                                 }
                             }
                         }
                         Button(action: {
                             artistNames.append("")
+                            selectedArtists.append(nil)  // New artist field starts with no selection.
+                            selectedArtistIndex = artistNames.count - 1
                         }) {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
+                                    .background(colorScheme == .dark ? Color.black : Color.white)
+                                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                                    .font(.footnote)
                                 Text("Add Artist")
+                                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                                    .font(.footnote)
                             }
                         }
+                        .disabled(artistNames.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
                         .foregroundColor(.blue)
                     }
                     .padding(.horizontal)
                     
                     // Flyer Input
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Flyer Link")
+                        (Text("Flyer Link ")
                             .font(.headline)
-                        TextField("Enter flyer URL (Instagram only)", text: $flyerLink)
+                         +
+                         Text("(optional)")
+                            .italic()
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        )
+                        TextField("Flyer Link", text: $flyerLink)
                             .padding()
                             .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
-                        Button("Upload Flyer Image") {
+                        Button(action: {
                             uploadFlyerImage()
+                        }) {
+                            HStack {
+                                Image(systemName: "arrow.up.doc.fill")
+                                    .background(colorScheme == .dark ? Color.black : Color.white)
+                                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                                    .font(.footnote)
+                                Text("Upload Flyer Image")
+                                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                                    .font(.footnote)
+                            }
                         }
-                        .foregroundColor(.blue)
-                        Text("+5")
-                            .foregroundColor(.green)
-                            .font(.caption)
                     }
                     .padding(.horizontal)
                     
@@ -244,37 +621,62 @@ struct AddEventView: View {
                     Button(action: {
                         submitEvent()
                     }) {
-                        Text("Submit Event")
-                            .font(.headline)
-                            .foregroundColor(.white)
+                        Text("add event")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(colorScheme == .dark ? Color.white : Color.black)
+                            .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
                             .cornerRadius(8)
                     }
                     .padding(.horizontal)
+                    .padding(.top, 32)
                     
                     Spacer()
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            // Full-screen auto-complete overlays
+            // Full-screen auto-complete overlay for Venue
             .fullScreenCover(isPresented: $showVenueAutoComplete) {
-                AutoCompleteOverlay(text: $venueName, suggestions: venueSuggestions, title: "Venues")
+                VenueAutoCompleteOverlay(text: $venueName, selectedVenue: $selectedVenue, suggestions: venueSuggestions, title: "Venues")
+                    .onAppear {
+                        fetchVenues()
+                    }
+                    .onDisappear {
+                        isVenueFocused = false
+                    }
             }
+            // Full-screen auto-complete overlay for Promoter
             .fullScreenCover(isPresented: $showPromoterAutoComplete) {
-                AutoCompleteOverlay(text: $promoterName, suggestions: promoterSuggestions, title: "Promoters")
+                PromoterAutoCompleteOverlay(text: $promoterName, selectedPromoter: $selectedPromoter, suggestions: promoterSuggestions, title: "Promoters")
+                    .onAppear {
+                        fetchPromoters()
+                    }
+                    .onDisappear {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
             }
+            // Full-screen auto-complete overlay for Artists using selectedArtistIndex
             .fullScreenCover(isPresented: Binding<Bool>(
                 get: { selectedArtistIndex != nil },
                 set: { if !$0 { selectedArtistIndex = nil } }
             )) {
                 if let index = selectedArtistIndex {
-                    AutoCompleteOverlay(text: $artistNames[index],
-                                        suggestions: artistSuggestions,
-                                        title: "Artists")
+                    // Create a binding for the selected artist at the current index.
+                    let selectedArtistBinding = Binding<Artist?>(
+                        get: { selectedArtists[index] },
+                        set: { newValue in
+                            selectedArtists[index] = newValue
+                        }
+                    )
+                    ArtistAutoCompleteOverlay(text: $artistNames[index],
+                                              selectedArtist: selectedArtistBinding,
+                                              suggestions: artistSuggestions,
+                                              title: "Artists")
+                    .onAppear {
+                        fetchArtists()
+                    }
                         .onDisappear {
                             selectedArtistIndex = nil
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                 }
             }
@@ -291,56 +693,220 @@ struct AddEventView: View {
         var tags = [String]()
         if !venueName.isEmpty { tags.append(venueName) }
         if !promoterName.isEmpty { tags.append(promoterName) }
-        if !city.isEmpty { tags.append(city) }
+        if let city = selectedVenue?.city, !city.isEmpty {
+            tags.append(city)
+        }
         return tags
     }
     
+    // Fetch venues from API.
+    // Fetch venues from the API.
+    func fetchVenues() {
+        guard let url = URL(string: "https://enm-project-production.up.railway.app/api/venues") else { return }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                do {
+                    let venues = try JSONDecoder().decode([Venue].self, from: data)
+                    DispatchQueue.main.async {
+                        venueSuggestions = venues
+                    }
+                } catch {
+                    print("Error decoding venues: \(error)")
+                }
+            }
+        }.resume()
+    }
+    
+    func fetchPromoters() {
+        guard let url = URL(string: "https://enm-project-production.up.railway.app/api/promoters") else { return }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                do {
+                    let promoters = try JSONDecoder().decode([Promoter].self, from: data)
+                    DispatchQueue.main.async {
+                        promoterSuggestions = promoters
+                    }
+                } catch {
+                    print("Error decoding promoters: \(error)")
+                }
+            }
+        }.resume()
+    }
+    
+    func fetchArtists() {
+        guard let url = URL(string: "https://enm-project-production.up.railway.app/api/artists") else { return }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                do {
+                    let artists = try JSONDecoder().decode([Artist].self, from: data)
+                    DispatchQueue.main.async {
+                        // Update your suggestions array with the full objects if needed.
+                        // For instance, if you have a state variable:
+                        // self.artistSuggestions = artists
+                        // or if you only need names, you could map them.
+                        // Here we assume you want full objects:
+                        self.artistSuggestions = artists
+                    }
+                } catch {
+                    print("Error decoding artists: \(error)")
+                }
+            }
+        }.resume()
+    }
+
+        
     // Submit event function: build event object and print (simulate API call).
     func submitEvent() {
-        guard !venueName.trimmingCharacters(in: .whitespaces).isEmpty,
-              !city.trimmingCharacters(in: .whitespaces).isEmpty else {
+        // Validate required fields.
+        guard !venueName.trimmingCharacters(in: .whitespaces).isEmpty else {
             errorMessage = "Please fill in required fields (Venue and City)."
             return
         }
         
         var eventData = [String: Any]()
-        eventData["venue"] = ["name": venueName]
-        if !promoterName.isEmpty {
+        
+        // Venue
+        if let venue = selectedVenue {
+            if let data = try? JSONEncoder().encode(venue),
+               var venueDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                eventData["venue"] = unwrapID(from: venueDict)
+            } else {
+                eventData["venue"] = ["name": venueName]
+            }
+        } else {
+            eventData["venue"] = ["name": venueName]
+        }
+
+        // Promoter
+        if let promoter = selectedPromoter {
+            if let data = try? JSONEncoder().encode(promoter),
+               var promoterDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                eventData["promoter"] = unwrapID(from: promoterDict)
+            } else {
+                eventData["promoter"] = ["name": promoterName]
+            }
+        } else {
             eventData["promoter"] = ["name": promoterName]
         }
-        eventData["city"] = city
+        
+        // Create an ISO8601DateFormatter with fractional seconds.
         let isoFormatter = ISO8601DateFormatter()
-        eventData["date"] = isoFormatter.string(from: eventDate)
-        eventData["doorTime"] = isoFormatter.string(from: doorTime)
-        eventData["dateTime"] = isoFormatter.string(from: showTime)
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        // 1. "date": Use only the date portion from eventDate.
+        let eventDateAtStart = Calendar.current.startOfDay(for: eventDate)
+        eventData["date"] = isoFormatter.string(from: eventDateAtStart)
+
+        // 2. "doorTime": Combine the doorTime's time with today's date.
+        if let doorTime = doorTime {
+            let now = Date()
+            let timeComponents = Calendar.current.dateComponents([.hour, .minute, .second, .nanosecond], from: doorTime)
+            if let doorCombined = Calendar.current.date(bySettingHour: timeComponents.hour ?? 0,
+                                                          minute: timeComponents.minute ?? 0,
+                                                          second: timeComponents.second ?? 0,
+                                                          of: now) {
+                eventData["doorTime"] = isoFormatter.string(from: doorCombined)
+            }
+        } else {
+            eventData["doorTime"] = ""
+        }
+
+        // 3. "dateTime": Combine the date from eventDate with the time from showTime.
+        if let showTime = showTime {
+            let timeComponents = Calendar.current.dateComponents([.hour, .minute, .second, .nanosecond], from: showTime)
+            if let showCombined = Calendar.current.date(bySettingHour: timeComponents.hour ?? 0,
+                                                          minute: timeComponents.minute ?? 0,
+                                                          second: timeComponents.second ?? 0,
+                                                          of: eventDateAtStart) {
+                eventData["dateTime"] = isoFormatter.string(from: showCombined)
+            }
+        } else {
+            eventData["dateTime"] = ""
+        }
+        
         if !coverText.isEmpty {
             eventData["cover"] = Int(coverText) ?? 0
         }
-        let validArtists = artistNames.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        
+        // In your submitEvent() function, update the artists section.
+        // If you have a selected artist (from auto‑complete) for an artist field, encode it;
+        // otherwise, fall back to the plain text in artistNames.
+        // Artists: process each artist in your array.
+        let validArtists: [[String: Any]] = artistNames.enumerated().compactMap { index, artistName in
+            let trimmed = artistName.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty { return nil }
+            // Use the corresponding selected artist if available.
+            if let selectedArtist = selectedArtists[index] {
+                if let data = try? JSONEncoder().encode(selectedArtist),
+                   var artistDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    return unwrapID(from: artistDict)
+                }
+            }
+            // Fallback: just use the name.
+            return ["name": trimmed]
+        }
+
         if !validArtists.isEmpty {
             eventData["artists"] = validArtists
         }
+        
         eventData["flyer"] = flyerLink
         eventData["tags"] = buildTags()
-        // Add username if signed in (assuming authManager is set up).
-        // e.g., eventData["submittedBy"] = authManager.user?.username
+        // Optionally add "submittedBy" if needed.
+         eventData["submittedBy"] = authManager.user?.username
         
         errorMessage = nil
-        print("Submitting event: \(eventData)")
+                
+        // Convert eventData to JSON for pretty-printing in the console.
+        if let jsonData = try? JSONSerialization.data(withJSONObject: eventData, options: .prettyPrinted),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("Submitting event:\n\(jsonString)")
+        } else {
+            print("Submitting event: \(eventData)")
+        }
+        
+        // Now send the payload to the API.
+        guard let url = URL(string: "https://enm-project-production.up.railway.app/api/enmEvent") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: eventData, options: [])
+            request.httpBody = jsonData
+        } catch {
+            print("Error serializing eventData: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error submitting event: \(error)")
+                return
+            }
+            if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                print("Response from API:\n\(responseString)")
+            }
+        }.resume()
         
         resetForm()
     }
-    
     func resetForm() {
         venueName = ""
         promoterName = ""
-        city = ""
         eventDate = Date()
-        doorTime = Date(timeIntervalSince1970: 0)
-        showTime = Date(timeIntervalSince1970: 0)
+        doorTime = nil
+        showTime = nil
         coverText = ""
         artistNames = [""]
         flyerLink = ""
+    }
+    func unwrapID(from dict: [String: Any]) -> [String: Any] {
+        var newDict = dict
+        if let idObject = dict["_id"] as? [String: Any],
+           let oid = idObject["$oid"] as? String {
+            newDict["_id"] = oid
+        }
+        return newDict
     }
 }
 
