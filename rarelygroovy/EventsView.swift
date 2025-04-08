@@ -248,7 +248,7 @@ struct EventsView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         // Check if any events match the search criteria
                         if filteredEvents.isEmpty && !viewModel.isLoading && !searchQuery.isEmpty {
-                            Text("No events found matching your search criteria.")
+                            Text("No events match search criteria.")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                                 .padding()
@@ -607,4 +607,13 @@ func parseISODate(_ isoString: String) -> Date? {
     let formatter = ISO8601DateFormatter()
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     return formatter.date(from: isoString)
+}
+
+func isElevenFiftyNinePM(_ isoString: String) -> Bool {
+    let formatter = ISO8601DateFormatter()
+    if let date = formatter.date(from: isoString) {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return components.hour == 23 && components.minute == 59
+    }
+    return false
 }

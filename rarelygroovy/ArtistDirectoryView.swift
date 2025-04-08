@@ -288,121 +288,128 @@ struct ArtistDirectoryView: View {
                     }
                     .padding(.bottom, 8)
                     LazyVStack(alignment: .center, spacing: 0) {
-                        ForEach(finalArtists) { artist in
-                            VStack(alignment: .center, spacing: 8) {
-                                // Only show creation date when Recently Added filter is active
-                                if isRecentlyAddedMode {
-                                    Text("Added " + formattedCreationDate(from: artist.id))
-                                        .italic()
-                                        .font(.footnote)
-                                        .foregroundColor(.secondary)
-                                        .padding(4)
-                                        .background(Color(UIColor.systemBackground).opacity(0.8))
-                                        .cornerRadius(4)
-                                        .padding([.top, .trailing], 4)
-                                }
-                                // Artist name with location (if not "rgv")
-                                Text(artist.name + (artist.location.uppercased() != "RGV" ? " (\(artist.location.uppercased()))" : ""))
-                                    .font(.subheadline)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                // Prepare display parts
-                                // Prepare parts
-                                let mediumPart = artist.medium ?? ""
-                                let genrePart = artist.genre.joined(separator: " · ")
-
-                                // Date range part with status when applicable
-                                let dateRangePart: String = {
-                                    if !artist.start.isEmpty && artist.start.lowercased() != "pending" {
-                                        let startYear = String(artist.start.prefix(4))
-                                        if let endVal = artist.end, !endVal.isEmpty, endVal.lowercased() != "pending" {
-                                            let endYear = String(endVal.prefix(4))
-                                            var result = "\(startYear) - \(endYear)"
-                                            if let status = artist.status, !status.isEmpty {
-                                                result += ", \(status)"
-                                            }
-                                            return result
-                                        } else {
-                                            return "\(startYear) - current"
-                                        }
-                                    }
-                                    return ""
-                                }()
-
-                                // In your view:
-                                VStack(alignment: .center, spacing: 4) {
-                                    // Line 1: Genre only
-                                    if !genrePart.isEmpty {
-                                        Text(genrePart)
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                    }
-                                    
-                                    // Line 2: Medium and Date Range combined
-                                    let mediumDateString: String = {
-                                        var s = ""
-                                        if !mediumPart.isEmpty {
-                                            s += mediumPart
-                                        }
-                                        if !dateRangePart.isEmpty {
-                                            if !s.isEmpty { s += "     " } // extra spacing if both present
-                                            s += dateRangePart.replacingOccurrences(of: " - ", with: "\u{00A0}-\u{00A0}")
-                                        }
-                                        return s
-                                    }()
-                                    
-                                    if !mediumDateString.isEmpty {
-                                        Text(mediumDateString)
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
-                                // Valid links
-                                if let links = artist.links {
-                                    let validLinks = links.filter {
-                                        if let url = URL(string: $0.value),
-                                           let scheme = url.scheme,
-                                           ["http", "https"].contains(scheme) {
-                                            return true
-                                        }
-                                        return false
-                                    }
-                                    let customSortedLinks = validLinks.sorted { a, b in
-                                        rank(for: a.key) < rank(for: b.key)
-                                    }
-                                    if !validLinks.isEmpty {
-                                        HStack(spacing: 16) {
-                                            ForEach(customSortedLinks, id: \.key) { key, value in
-                                                if let url = URL(string: value) {
-                                                    let icon = fontAwesomeIcon(for: key)
-                                                    Link(destination: url) {
-                                                        Text(String.fontAwesomeIcon(name: icon))
-                                                            .font(.custom(fontName(for: icon), size: 24))
-                                                            .foregroundColor(.secondary)
-                                                    }
-                                                    .frame(width: 35, height: 40)
-                                                }
-                                            }
-                                        }
-                                        .padding(.top, 4)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical, 16)
-                            
-                            Divider()
-                        }
-                        // Disclaimer at the bottom
-                        if !viewModel.isLoading && !viewModel.artists.isEmpty {
-                            Text("* Start and end years are best estimates")
+                        if finalArtists.isEmpty && !viewModel.isLoading {
+                            Text("No artists match search criteria.")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
+                                .padding(.top, 40)
+                        } else {
+                            ForEach(finalArtists) { artist in
+                                VStack(alignment: .center, spacing: 8) {
+                                    // Only show creation date when Recently Added filter is active
+                                    if isRecentlyAddedMode {
+                                        Text("Added " + formattedCreationDate(from: artist.id))
+                                            .italic()
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                            .padding(4)
+                                            .background(Color(UIColor.systemBackground).opacity(0.8))
+                                            .cornerRadius(4)
+                                            .padding([.top, .trailing], 4)
+                                    }
+                                    // Artist name with location (if not "rgv")
+                                    Text(artist.name + (artist.location.uppercased() != "RGV" ? " (\(artist.location.uppercased()))" : ""))
+                                        .font(.subheadline)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                    // Prepare display parts
+                                    // Prepare parts
+                                    let mediumPart = artist.medium ?? ""
+                                    let genrePart = artist.genre.joined(separator: " · ")
+
+                                    // Date range part with status when applicable
+                                    let dateRangePart: String = {
+                                        if !artist.start.isEmpty && artist.start.lowercased() != "pending" {
+                                            let startYear = String(artist.start.prefix(4))
+                                            if let endVal = artist.end, !endVal.isEmpty, endVal.lowercased() != "pending" {
+                                                let endYear = String(endVal.prefix(4))
+                                                var result = "\(startYear) - \(endYear)"
+                                                if let status = artist.status, !status.isEmpty {
+                                                    result += ", \(status)"
+                                                }
+                                                return result
+                                            } else {
+                                                return "\(startYear) - current"
+                                            }
+                                        }
+                                        return ""
+                                    }()
+
+                                    // In your view:
+                                    VStack(alignment: .center, spacing: 4) {
+                                        // Line 1: Genre only
+                                        if !genrePart.isEmpty {
+                                            Text(genrePart)
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                                .multilineTextAlignment(.center)
+                                        }
+                                        
+                                        // Line 2: Medium and Date Range combined
+                                        let mediumDateString: String = {
+                                            var s = ""
+                                            if !mediumPart.isEmpty {
+                                                s += mediumPart
+                                            }
+                                            if !dateRangePart.isEmpty {
+                                                if !s.isEmpty { s += "     " } // extra spacing if both present
+                                                s += dateRangePart.replacingOccurrences(of: " - ", with: "\u{00A0}-\u{00A0}")
+                                            }
+                                            return s
+                                        }()
+                                        
+                                        if !mediumDateString.isEmpty {
+                                            Text(mediumDateString)
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                                .multilineTextAlignment(.center)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 4)
+                                    // Valid links
+                                    if let links = artist.links {
+                                        let validLinks = links.filter {
+                                            if let url = URL(string: $0.value),
+                                               let scheme = url.scheme,
+                                               ["http", "https"].contains(scheme) {
+                                                return true
+                                            }
+                                            return false
+                                        }
+                                        let customSortedLinks = validLinks.sorted { a, b in
+                                            rank(for: a.key) < rank(for: b.key)
+                                        }
+                                        if !validLinks.isEmpty {
+                                            HStack(spacing: 16) {
+                                                ForEach(customSortedLinks, id: \.key) { key, value in
+                                                    if let url = URL(string: value) {
+                                                        let icon = fontAwesomeIcon(for: key)
+                                                        Link(destination: url) {
+                                                            Text(String.fontAwesomeIcon(name: icon))
+                                                                .font(.custom(fontName(for: icon), size: 24))
+                                                                .foregroundColor(.secondary)
+                                                        }
+                                                        .frame(width: 35, height: 40)
+                                                    }
+                                                }
+                                            }
+                                            .padding(.top, 4)
+                                        }
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 16)
+                                
+                                Divider()
+                            }
+                            // Disclaimer at the bottom
+                            if !viewModel.isLoading && !viewModel.artists.isEmpty {
+                                Text("* Start and end years are best estimates")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
+                            }
                         }
                     }
                     .padding(.horizontal)
