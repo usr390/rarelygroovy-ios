@@ -35,7 +35,7 @@ final class AuthManager: ObservableObject {
     struct User: Codable {
         let id: String
         let username: String
-        let plus: Bool
+        var plus: Bool
     }
     
     struct LoginResponse: Codable {

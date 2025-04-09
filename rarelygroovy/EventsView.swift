@@ -594,9 +594,9 @@ func listingLabel(for event: Event, recentlyAddedActive: Bool) -> String? {
     // Only show label if the event was listed within the last 3 days
     if daysAgo <= 3 {
         if daysAgo == 0 {
-            return "Listed Today"
+            return "Listed today"
         } else if daysAgo == 1 {
-            return "Listed Yesterday"
+            return "Listed yesterday"
         } else {
             return "Listed \(daysAgo) days ago"
         }

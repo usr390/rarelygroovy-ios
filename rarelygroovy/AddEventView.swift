@@ -7,8 +7,6 @@ struct AutoCompleteOverlay: View {
     let title: String  // Dynamic title parameter
     @Environment(\.dismiss) var dismiss
 
-    @FocusState private var isTextFieldFocused: Bool
-
     var filteredSuggestions: [String] {
         if text.isEmpty {
             return suggestions
@@ -24,10 +22,6 @@ struct AutoCompleteOverlay: View {
                     TextField("Search...", text: $text)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                        .focused($isTextFieldFocused)
-                        .onAppear {
-                            isTextFieldFocused = true
-                        }
                     if !text.isEmpty {
                         Button {
                             text = ""
@@ -42,11 +36,7 @@ struct AutoCompleteOverlay: View {
                     Text(suggestion)
                         .onTapGesture {
                             text = suggestion
-                            isTextFieldFocused = false
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                dismiss()
-                            }
+                            dismiss()
                         }
                 }
                 .listStyle(PlainListStyle())
@@ -55,19 +45,12 @@ struct AutoCompleteOverlay: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        // Accept current input and dismiss overlay.
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }
                 }
             }
@@ -85,14 +68,9 @@ struct OptionalTimeInputView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             // Label with optional marker.
-            (Text("\(label) ")
+            Text("\(label)")
                 .font(.headline)
-             +
-             Text("(opt.)")
-                .italic()
-                .font(.footnote)
-                .foregroundColor(.secondary)
-            )
+            
             Button(action: {
                 // When tapping, use the existing time or current time as a default.
                 tempTime = time ?? Date()
@@ -249,7 +227,6 @@ struct VenueAutoCompleteOverlay: View {
     let suggestions: [Venue]  // now an array of Venue objects
     let title: String
     @Environment(\.dismiss) var dismiss
-    @FocusState private var isTextFieldFocused: Bool
 
     var filteredSuggestions: [Venue] {
         if text.isEmpty {
@@ -266,10 +243,6 @@ struct VenueAutoCompleteOverlay: View {
                     TextField("Search...", text: $text)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                        .focused($isTextFieldFocused)
-                        .onAppear {
-                            isTextFieldFocused = true
-                        }
                     if !text.isEmpty {
                         Button {
                             text = ""
@@ -284,11 +257,7 @@ struct VenueAutoCompleteOverlay: View {
                     Button(action: {
                         text = venue.name ?? ""
                         selectedVenue = venue
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }) {
                         HStack {
                             Text(venue.name ?? "Unknown")
@@ -304,18 +273,12 @@ struct VenueAutoCompleteOverlay: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }
                 }
             }
@@ -328,7 +291,6 @@ struct PromoterAutoCompleteOverlay: View {
     let suggestions: [Promoter]
     let title: String
     @Environment(\.dismiss) var dismiss
-    @FocusState private var isTextFieldFocused: Bool
 
     var filteredSuggestions: [Promoter] {
         if text.isEmpty {
@@ -345,10 +307,6 @@ struct PromoterAutoCompleteOverlay: View {
                     TextField("Search...", text: $text)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                        .focused($isTextFieldFocused)
-                        .onAppear {
-                            isTextFieldFocused = true
-                        }
                     if !text.isEmpty {
                         Button {
                             text = ""
@@ -363,11 +321,7 @@ struct PromoterAutoCompleteOverlay: View {
                     Button(action: {
                         text = promoter.name ?? ""
                         selectedPromoter = promoter
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }) {
                         HStack {
                             Text(promoter.name ?? "Unknown")
@@ -383,18 +337,12 @@ struct PromoterAutoCompleteOverlay: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }
                 }
             }
@@ -407,7 +355,6 @@ struct ArtistAutoCompleteOverlay: View {
     let suggestions: [Artist]
     let title: String
     @Environment(\.dismiss) var dismiss
-    @FocusState private var isTextFieldFocused: Bool
 
     var filteredSuggestions: [Artist] {
         if text.isEmpty {
@@ -424,10 +371,6 @@ struct ArtistAutoCompleteOverlay: View {
                     TextField("Search...", text: $text)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                        .focused($isTextFieldFocused)
-                        .onAppear {
-                            isTextFieldFocused = true
-                        }
                     if !text.isEmpty {
                         Button {
                             text = ""
@@ -442,11 +385,7 @@ struct ArtistAutoCompleteOverlay: View {
                     Button(action: {
                         text = artist.name
                         selectedArtist = artist
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }) {
                         HStack {
                             Text(artist.name)
@@ -462,18 +401,12 @@ struct ArtistAutoCompleteOverlay: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        isTextFieldFocused = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            dismiss()
-                        }
+                        dismiss()
                     }
                 }
             }
@@ -510,11 +443,11 @@ struct SuccessOverlay: View {
                     doneAction()
                     dismiss()
                 }) {
-                    Text("Ok")
+                    Text("dismiss")
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(colorScheme == .dark ? Color.white : Color.black)
-                        .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
+                        .background(colorScheme == .dark ? Color.black : Color.white)
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(8)
                 }
             }
@@ -599,17 +532,25 @@ struct AddEventView: View {
                     }
                     .padding(.horizontal)
                     
+                    // Event Date Picker
+                    OptionalDateInputView(label: "Date", date: $eventDate)
+                        .padding(.horizontal)
+                    
+                    // Time Inputs using our custom OptionalTimeInputView
+                    HStack(alignment: .top, spacing: 16) {
+                        OptionalTimeInputView(label: "Doors", time: $doorTime)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        OptionalTimeInputView(label: "Show Time", time: $showTime)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal)
+                    
                     // Promoter Input with Auto-Complete
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            (Text("Promoter ")
+                            Text("Promoter")
                                 .font(.headline)
-                             +
-                             Text("(optional)")
-                                .italic()
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                            )
+    
                             Spacer()
                         }
                         TextField("Promoter", text: $promoterName)
@@ -625,30 +566,12 @@ struct AddEventView: View {
                     }
                     .padding(.horizontal)
                     
-                    // Event Date Picker
-                    OptionalDateInputView(label: "Date", date: $eventDate)
-                        .padding(.horizontal)
-                    
-                    // Time Inputs using our custom OptionalTimeInputView
-                    HStack(alignment: .top, spacing: 16) {
-                        OptionalTimeInputView(label: "Doors", time: $doorTime)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        OptionalTimeInputView(label: "Show Time", time: $showTime)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal)
                     
                     // Cover Input
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            (Text("Cover ")
+                            Text("Cover")
                                 .font(.headline)
-                             +
-                             Text("(optional)")
-                                .italic()
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                            )
                             Spacer()
                         }
                         HStack {
@@ -667,14 +590,9 @@ struct AddEventView: View {
                     
                     // Artists Input with dynamic fields and auto-complete using full-screen overlay
                     VStack(alignment: .leading, spacing: 8) {
-                        (Text("Artists ")
+                        Text("Artists ")
                             .font(.headline)
-                         +
-                         Text("(optional)")
-                            .italic()
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                        )
+
                         ForEach(artistNames.indices, id: \.self) { index in
                             HStack {
                                 TextField("Artist", text: $artistNames[index])
@@ -734,16 +652,16 @@ struct AddEventView: View {
                     
                     // Flyer Input
                     VStack(alignment: .leading, spacing: 8) {
-                        (Text("Flyer Link ")
+                        Text("Flyer Link ")
                             .font(.headline)
-                         +
-                         Text("(optional)")
-                            .italic()
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                        )
+
                         TextField("Flyer Link", text: $flyerLink)
                             .autocorrectionDisabled(true)
+                            .onChange(of: flyerLink) { newValue in
+                                if let questionMarkIndex = newValue.firstIndex(of: "?") {
+                                    flyerLink = String(newValue[..<questionMarkIndex])
+                                }
+                            }
                             .padding()
                             .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
@@ -809,7 +727,6 @@ struct AddEventView: View {
                             promoterName = ""
                             selectedPromoter = nil
                         }
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
             }
             // Full-screen auto-complete overlay for Artists using selectedArtistIndex
@@ -832,10 +749,9 @@ struct AddEventView: View {
                     .onAppear {
                         fetchArtists()
                     }
-                        .onDisappear {
-                            selectedArtistIndex = nil
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        }
+                    .onDisappear {
+                        selectedArtistIndex = nil
+                    }
                 }
         }
     }
