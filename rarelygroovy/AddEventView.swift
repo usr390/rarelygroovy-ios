@@ -118,9 +118,6 @@ struct OptionalTimePickerOverlay: View {
                     .datePickerStyle(WheelDatePickerStyle())
                     .environment(\.locale, Locale(identifier: "en_US_POSIX"))
                     .environment(\.calendar, Calendar(identifier: .gregorian))
-                    .onAppear {
-                        // Optionally adjust default if needed.
-                    }
                     .padding()
                 Spacer()
             }
@@ -133,7 +130,8 @@ struct OptionalTimePickerOverlay: View {
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("Clear") {
+                        time = nil
                         dismiss()
                     }
                 }
@@ -597,15 +595,17 @@ struct AddEventView: View {
                             HStack {
                                 TextField("Artist", text: $artistNames[index])
                                     .autocorrectionDisabled(true)
-                                    .disabled(true)
-                                    .allowsHitTesting(true)
+                                    .disabled(true)  // prevents direct keyboard interaction
+                                    .allowsHitTesting(true)  // tap events still come through
                                     .padding()
                                     .background(Color(UIColor.secondarySystemBackground))
                                     .cornerRadius(8)
                                     .onTapGesture {
+                                        // force any current first responder to resign (e.g., cover input)
+                                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                                         selectedArtistIndex = index
                                     }
-
+                                
                                 if !artistNames[index].trimmingCharacters(in: .whitespaces).isEmpty {
                                     Button(action: {
                                         artistNames.remove(at: index)
@@ -629,7 +629,8 @@ struct AddEventView: View {
                                             .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                                     }
                                 }
-                            }                        }
+                            }
+                        }
                         Button(action: {
                             artistNames.append("")
                             selectedArtists.append(nil)  // New artist field starts with no selection.
@@ -776,57 +777,43 @@ struct AddEventView: View {
     // Fetch venues from the API.
     func fetchVenues() {
         guard let url = URL(string: "https://enm-project-production.up.railway.app/api/venues") else { return }
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data {
-                do {
-                    let venues = try JSONDecoder().decode([Venue].self, from: data)
-                    DispatchQueue.main.async {
-                        venueSuggestions = venues
-                    }
-                } catch {
-                    print("Error decoding venues: \(error)")
+        Task {
+            do {
+                let venues: [Venue] = try await fetchWithRetry(url: url)
+                DispatchQueue.main.async {
+                    venueSuggestions = venues
                 }
+            } catch {
+                print("Error fetching venues: \(error)")
             }
-        }.resume()
-    }
-    
+        }
+    }    
     func fetchPromoters() {
         guard let url = URL(string: "https://enm-project-production.up.railway.app/api/promoters") else { return }
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data {
-                do {
-                    let promoters = try JSONDecoder().decode([Promoter].self, from: data)
-                    DispatchQueue.main.async {
-                        promoterSuggestions = promoters
-                    }
-                } catch {
-                    print("Error decoding promoters: \(error)")
+        Task {
+            do {
+                let promoters: [Promoter] = try await fetchWithRetry(url: url)
+                DispatchQueue.main.async {
+                    promoterSuggestions = promoters
                 }
+            } catch {
+                print("Error fetching promoters: \(error)")
             }
-        }.resume()
+        }
     }
-    
     func fetchArtists() {
         guard let url = URL(string: "https://enm-project-production.up.railway.app/api/artists") else { return }
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data {
-                do {
-                    let artists = try JSONDecoder().decode([Artist].self, from: data)
-                    DispatchQueue.main.async {
-                        // Update your suggestions array with the full objects if needed.
-                        // For instance, if you have a state variable:
-                        // self.artistSuggestions = artists
-                        // or if you only need names, you could map them.
-                        // Here we assume you want full objects:
-                        self.artistSuggestions = artists
-                    }
-                } catch {
-                    print("Error decoding artists: \(error)")
+        Task {
+            do {
+                let artists: [Artist] = try await fetchWithRetry(url: url)
+                DispatchQueue.main.async {
+                    artistSuggestions = artists
                 }
+            } catch {
+                print("Error fetching artists: \(error)")
             }
-        }.resume()
+        }
     }
-
         
     // Submit event function: build event object and print (simulate API call).
     func submitEvent() {
@@ -990,6 +977,28 @@ struct AddEventView: View {
             newDict["_id"] = oid
         }
         return newDict
+    }
+    func fetchWithRetry<T: Decodable>(url: URL, maxRetries: Int = 3, initialDelay: UInt64 = 1_000_000_000) async throws -> T {
+        var currentRetries = 0
+        var delayTime = initialDelay
+        while true {
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+                let decoder = JSONDecoder()
+                return try decoder.decode(T.self, from: data)
+            } catch {
+                if currentRetries < maxRetries {
+                    currentRetries += 1
+                    try await Task.sleep(nanoseconds: delayTime)
+                    delayTime *= 2  // exponential backoff
+                } else {
+                    throw error
+                }
+            }
+        }
     }
 }
 

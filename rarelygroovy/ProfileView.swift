@@ -62,10 +62,11 @@ struct ProfileView: View {
 struct UpgradeDrawerOverlay: View {
     @Binding var showDrawer: Bool
     @StateObject var store = Store()
+    @Environment(\.colorScheme) var colorScheme
     
     let premiumFeatures = [
-        "Access to all upcoming events",
-        "Access to all artists in the Artist Directory",
+        "Access all upcoming events",
+        "Access all artists in the Artist Directory",
         "700+ artists across 40 years of Rio Grande Valley music",
     ]
     
@@ -93,6 +94,13 @@ struct UpgradeDrawerOverlay: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
+                    // insert your logo image here
+                    Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .padding(.bottom, 8)
+                    
                     Text("Upgrade to Rarelygroovy+")
                         .font(.title)
                         .fontWeight(.bold)
@@ -114,35 +122,46 @@ struct UpgradeDrawerOverlay: View {
                     }
                     .padding(.top, 8)
                     
-                    if let product = store.products.first {
-                        Button("upgrade for \(product.displayPrice)") {
-                            Task {
-                                await store.purchase(product)
-                                showDrawer = false
+                    VStack(spacing: 8) {
+                        if let product = store.products.first {
+                            Button("upgrade for \(product.displayPrice)") {
+                                Task {
+                                    await store.purchase(product)
+                                    showDrawer = false
+                                }
                             }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white)
+                            .foregroundColor(.black)
+                            .cornerRadius(8)
+                            .padding(.horizontal)
+                            
+                            Text("(one time purchase)")
+                                .font(.footnote)
+                                .foregroundColor(.white)
+                        } else {
+                            // placeholder with fixed height matching what the button/text would normally occupy
+                            VStack {
+                                Text("Loading purchase options…")
+                                    .foregroundColor(.white)
+                            }
+                            .frame(height: 100) // adjust the height as needed to match your design
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white)
-                        .foregroundColor(.black)
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        
-                        Text("(one time purchase)")
-                            .font(.footnote)
-                            .foregroundColor(.white)
-                    } else {
-                        Text("Loading purchase options…")
-                            .foregroundColor(.white)
                     }
+                    .padding(.top, 32)
                 }
                 .padding()
                 
                 Spacer()
             }
+            .offset(y: -10) // shifts the content up 20 points; adjust as needed
         }
     }
 }
+
+
+
 #Preview {
     ProfileView()
 }

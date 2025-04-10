@@ -165,11 +165,8 @@ struct EventDetailView: View {
                 .padding(.vertical, 16)
                 
                 // Mini Artist Directory (Lineup)
-                // Mini Artist Directory (Lineup)
-                // Mini Artist Directory (Lineup)
-                // Mini Artist Directory (Lineup)
-                Text("Artist Directory").font(.title).padding(.top, 50).foregroundColor(.gray)
                 if let artists = event.artists, !artists.isEmpty {
+                    Text("Artist Directory").font(.title).padding(.top, 50).foregroundColor(.gray)
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(artists) { artist in
                             VStack(alignment: .center, spacing: 4) {
