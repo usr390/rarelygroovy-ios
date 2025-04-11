@@ -30,17 +30,9 @@ struct EventDetailView: View {
                         }
                     }
                     
-                    // Artists summary: joined with mid-dots; include state if not RGV
+                    // Artists (joined with mid-dots)
                     if let artists = event.artists, !artists.isEmpty {
-                        let names = artists.map { artist -> String in
-                            let rawName = artist.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                            if artist.location.lowercased() != "rgv" {
-                                let state = artist.location.uppercased()
-                                return "\(rawName) (\(state))"
-                            } else {
-                                return rawName
-                            }
-                        }
+                        let names = artists.map { displayName(for: $0) }
                         let joinedNames = names.joined(separator: " · ")
                         Text(joinedNames)
                             .font(.subheadline)
@@ -180,23 +172,45 @@ struct EventDetailView: View {
                                 let genrePart = artist.genre.joined(separator: " · ")
 
                                 // Date range part with status when applicable
+                                // Updated date range logic:
                                 let dateRangePart: String = {
+                                    // Primary career leg (without status if a secondary leg exists)
+                                    var primary = ""
                                     if !artist.start.isEmpty && artist.start.lowercased() != "pending" {
                                         let startYear = String(artist.start.prefix(4))
                                         if let endVal = artist.end, !endVal.isEmpty, endVal.lowercased() != "pending" {
                                             let endYear = String(endVal.prefix(4))
-                                            var result = "\(startYear) - \(endYear)"
-                                            if let status = artist.status, !status.isEmpty {
-                                                result += ", \(status)"
-                                            }
-                                            return result
+                                            primary = "\(startYear) - \(endYear)"
                                         } else {
-                                            return "\(startYear) - current"
+                                            primary = "\(startYear) - current"
                                         }
                                     }
-                                    return ""
+                                    
+                                    // Secondary career leg (comeback) with status
+                                    var secondary = ""
+                                    if let start2 = artist.start2, !start2.isEmpty, start2.lowercased() != "pending" {
+                                        let startYear2 = String(start2.prefix(4))
+                                        if let end2 = artist.end2, !end2.isEmpty, end2.lowercased() != "pending" {
+                                            let endYear2 = String(end2.prefix(4))
+                                            secondary = "\(startYear2) - \(endYear2)"
+                                        } else {
+                                            secondary = "\(startYear2) - current"
+                                        }
+                                    }
+                                    
+                                    // Combine the two legs: if both exist, drop any status from the primary leg.
+                                    if !primary.isEmpty && !secondary.isEmpty {
+                                        if let commaIndex = primary.firstIndex(of: ",") {
+                                            primary = String(primary[..<commaIndex])
+                                        }
+                                        return primary + ", " + secondary
+                                    } else if !primary.isEmpty {
+                                        return primary
+                                    } else {
+                                        return secondary
+                                    }
                                 }()
-
+                                
                                 // In your view:
                                 VStack(alignment: .center, spacing: 4) {
                                     // Line 1: Genre only
@@ -317,3 +331,33 @@ func openInMaps(address: String, city: String) {
         UIApplication.shared.open(url)
     }
 }
+
+func displayName(for artist: Artist) -> String {
+    let rawName = artist.name.trimmingCharacters(in: .whitespacesAndNewlines)
+    var qualifiers: [String] = []
+    
+    // Include location if provided and it isn't "rgv"
+    let trimmedLocation = artist.location.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !trimmedLocation.isEmpty, artist.location.lowercased() != "rgv" {
+        // You can choose to uppercase it or format it as needed.
+        qualifiers.append(trimmedLocation.uppercased())
+    }
+    
+    // Add debut flags if true
+    if artist.debut ?? false {
+        qualifiers.append("debut")
+    }
+    if artist.albumDebut ?? false {
+        qualifiers.append("album debut")
+    }
+    if artist.rgvDebut ?? false {
+        qualifiers.append("rgv debut")
+    }
+    
+    if !qualifiers.isEmpty {
+        return "\(rawName) (\(qualifiers.joined(separator: ", ")))"
+    } else {
+        return rawName
+    }
+}
+

@@ -4,9 +4,10 @@ struct Promoter: Identifiable, Codable {
     let id: String
     let name: String?
     let link: String?
+    let debut: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case _id, name, link
+        case _id, name, link, debut
     }
 
     private enum OIDKeys: String, CodingKey {
@@ -27,6 +28,7 @@ struct Promoter: Identifiable, Codable {
 
         self.name = try? container.decode(String.self, forKey: .name)
         self.link = try? container.decode(String.self, forKey: .link)
+        self.debut = try? container.decode(Bool.self, forKey: .debut)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -34,5 +36,6 @@ struct Promoter: Identifiable, Codable {
         try container.encode(["$oid": id], forKey: ._id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeIfPresent(link, forKey: .link)
+        try container.encodeIfPresent(debut, forKey: .debut)
     }
 }

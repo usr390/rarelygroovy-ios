@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Generic AutoComplete Overlay
 struct AutoCompleteOverlay: View {
@@ -411,7 +412,62 @@ struct ArtistAutoCompleteOverlay: View {
         }
     }
 }
+struct PasteTextField: UIViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
 
+    func makeUIView(context: Context) -> UITextField {
+        // Use CustomTextField instead of plain UITextField
+        let textField = CustomTextField()
+        textField.placeholder = placeholder
+        textField.textContentType = .URL  // This hints for URL/paste support
+        textField.autocorrectionType = .no
+        textField.delegate = context.coordinator
+        textField.addTarget(context.coordinator,
+                            action: #selector(Coordinator.textDidChange(_:)),
+                            for: .editingChanged)
+        return textField
+    }
+    
+    func updateUIView(_ uiView: UITextField, context: Context) {
+        uiView.text = text
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: PasteTextField
+        
+        init(_ parent: PasteTextField) {
+            self.parent = parent
+        }
+        
+        @objc func textDidChange(_ textField: UITextField) {
+            parent.text = textField.text ?? ""
+        }
+        
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            // Delay slightly before showing the menu so that the text field is fully active
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let menu = UIMenuController.shared
+                // Set the target rectangle to the entire bounds of the text field.
+                menu.setTargetRect(textField.bounds, in: textField)
+                menu.setMenuVisible(true, animated: true)
+            }
+        }
+    }
+}
+// Custom UITextField subclass that always enables paste.
+class CustomTextField: UITextField {
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(paste(_:)) {
+            return true
+        }
+        return super.canPerformAction(action, withSender: sender)
+    }
+}
 struct SuccessOverlay: View {
     var doneAction: () -> Void
     var addAnotherAction: () -> Void
@@ -653,19 +709,21 @@ struct AddEventView: View {
                     
                     // Flyer Input
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Flyer Link ")
+                        Text("Flyer Link")
                             .font(.headline)
-
-                        TextField("Flyer Link", text: $flyerLink)
-                            .autocorrectionDisabled(true)
-                            .onChange(of: flyerLink) { newValue in
-                                if let questionMarkIndex = newValue.firstIndex(of: "?") {
-                                    flyerLink = String(newValue[..<questionMarkIndex])
-                                }
-                            }
+                        
+                        PasteTextField(text: $flyerLink, placeholder: "Paste URL here")
                             .padding()
                             .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
+                        
+                        // Use the helper to check the URL's host
+                        if !flyerLink.isEmpty, !isTrustedFlyerLink(flyerLink) {
+                            Text("Please use links only from Instagram or Facebook")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                        
                         Button(action: {
                             uploadFlyerImage()
                         }) {
@@ -679,12 +737,14 @@ struct AddEventView: View {
                                     .font(.footnote)
                             }
                         }
-                        .padding(.top, 4) // <- this is the tweak
+                        .padding(.top, 4)
                     }
                     .padding(.horizontal)
-                    
+
                     // Submit Button
                     Button(action: {
+                        // Dismiss keyboard before submitting
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         submitEvent()
                     }) {
                         Text("add event")
@@ -820,6 +880,12 @@ struct AddEventView: View {
         // Validate required fields.
         guard !venueName.trimmingCharacters(in: .whitespaces).isEmpty else {
             errorMessage = "Please fill in required fields (Venue and City)."
+            return
+        }
+        
+        // Validate flyer link
+        if !flyerLink.isEmpty && !isTrustedFlyerLink(flyerLink) {
+            errorMessage = "Please use a flyer link from Instagram or Facebook."
             return
         }
         
@@ -999,6 +1065,13 @@ struct AddEventView: View {
                 }
             }
         }
+    }
+    func isTrustedFlyerLink(_ link: String) -> Bool {
+        guard let url = URL(string: link),
+              let host = url.host?.lowercased() else {
+            return false
+        }
+        return host.hasSuffix("instagram.com") || host.hasSuffix("facebook.com")
     }
 }
 

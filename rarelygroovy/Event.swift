@@ -84,3 +84,8 @@ private func decodeDateField(_ container: KeyedDecodingContainer<Event.CodingKey
     return nil
 }
 
+extension Event {
+    var hasDebutingArtist: Bool {
+        return artists?.contains { $0.debut ?? false } ?? false
+    }
+}

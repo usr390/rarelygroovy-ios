@@ -318,21 +318,43 @@ struct ArtistDirectoryView: View {
 
                                     // Date range part with status when applicable
                                     let dateRangePart: String = {
+                                        // Primary career leg (without status if a secondary leg exists)
+                                        var primary = ""
                                         if !artist.start.isEmpty && artist.start.lowercased() != "pending" {
                                             let startYear = String(artist.start.prefix(4))
                                             if let endVal = artist.end, !endVal.isEmpty, endVal.lowercased() != "pending" {
                                                 let endYear = String(endVal.prefix(4))
-                                                var result = "\(startYear) - \(endYear)"
-                                                if let status = artist.status, !status.isEmpty {
-                                                    result += ", \(status)"
-                                                }
-                                                return result
+                                                primary = "\(startYear) - \(endYear)"
                                             } else {
-                                                return "\(startYear) - current"
+                                                primary = "\(startYear) - current"
                                             }
                                         }
-                                        return ""
+                                        
+                                        // Secondary career leg (comeback) with status
+                                        var secondary = ""
+                                        if let start2 = artist.start2, !start2.isEmpty, start2.lowercased() != "pending" {
+                                            let startYear2 = String(start2.prefix(4))
+                                            if let end2 = artist.end2, !end2.isEmpty, end2.lowercased() != "pending" {
+                                                let endYear2 = String(end2.prefix(4))
+                                                secondary = "\(startYear2) - \(endYear2)"
+                                            } else {
+                                                secondary = "\(startYear2) - current"
+                                            }
+                                        }
+                                        
+                                        // Combine the two legs: if both exist, drop any status from the primary leg.
+                                        if !primary.isEmpty && !secondary.isEmpty {
+                                            if let commaIndex = primary.firstIndex(of: ",") {
+                                                primary = String(primary[..<commaIndex])
+                                            }
+                                            return primary + ", " + secondary
+                                        } else if !primary.isEmpty {
+                                            return primary
+                                        } else {
+                                            return secondary
+                                        }
                                     }()
+
 
                                     // In your view:
                                     VStack(alignment: .center, spacing: 4) {

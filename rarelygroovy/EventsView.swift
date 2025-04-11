@@ -6,6 +6,7 @@ struct EventsView: View {
     @State private var nonRGVOnly = false  // New chip filter state
     @State private var recentlyAddedOnly = false  // New chip filter state
     @State private var selectedEventGenres = Set<String>()
+    @State private var showDebutingOnly = false
     
     // Dictionary mapping top-level genres to subgenres
     let genreMapping: [String: [String]] = [
@@ -143,19 +144,44 @@ struct EventsView: View {
             }
         }
         
-        // New: Filter for selected genres
+        // Filter for selected genres
         if !selectedEventGenres.isEmpty {
             let selectedGenresLower = Set(selectedEventGenres.map { $0.lowercased() })
             events = events.filter { event in
                 guard let artists = event.artists else { return false }
-                // Collect all genres from all artists in this event (lowercased)
                 let combinedGenres = artists.flatMap { $0.genre.map { $0.lowercased() } }
                 return !Set(combinedGenres).isDisjoint(with: selectedGenresLower)
             }
         }
         
+        // New: Filter for events with debuting information if the toggle is active
+        if showDebutingOnly {
+            events = events.filter { event in
+                let venueDebut = event.venue?.debut ?? false
+                let promoterDebut = event.promoter?.debut ?? false
+                let artistDebut = event.artists?.contains {
+                    ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false)
+                } ?? false
+                return venueDebut || promoterDebut || artistDebut
+            }
+        }
+        
         return events
-    }    // Computed property to filter events based on the search query and potential future filters
+    }
+
+    // Helper computed property to determine if there is any event with debuting info
+    private var hasDebutingArtist: Bool {
+        return viewModel.events.contains { event in
+            let venueDebut = event.venue?.debut ?? false
+            let promoterDebut = event.promoter?.debut ?? false
+            let artistDebut = event.artists?.contains {
+                ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false)
+            } ?? false
+            return venueDebut || promoterDebut || artistDebut
+        }
+    }
+    
+    
     var body: some View {
         ZStack {
             VStack {
@@ -239,6 +265,25 @@ struct EventsView: View {
                                 .cornerRadius(16)
                             }
                             
+                            // Debuting chip: only show if any event has a debuting artist.
+                            if hasDebutingArtist {
+                                Button(action: {
+                                    showDebutingOnly.toggle()
+                                }) {
+                                    HStack {
+                                        Text("Debuting")
+                                        Image(systemName: "sparkles")
+                                            .imageScale(.medium)
+                                    }
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(showDebutingOnly ? Color.primary : Color.gray.opacity(0.3))
+                                    .foregroundColor(showDebutingOnly ? Color.black : .primary)
+                                    .cornerRadius(16)
+                                }
+                            }
+                            
                             Spacer()
                         }
                         .padding(.horizontal, 8)
@@ -301,15 +346,7 @@ struct EventsView: View {
                                             
                                             // Artists (joined with mid-dots)
                                             if let artists = event.artists, !artists.isEmpty {
-                                                let names = artists.map { artist -> String in
-                                                    let rawName = artist.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                                                    if artist.location.lowercased() != "rgv" {
-                                                        let state = artist.location.uppercased()
-                                                        return "\(rawName) (\(state))"
-                                                    } else {
-                                                        return rawName
-                                                    }
-                                                }
+                                                let names = artists.map { displayName(for: $0) }
                                                 let joinedNames = names.joined(separator: " · ")
                                                 Text(joinedNames)
                                                     .font(.subheadline)
@@ -470,6 +507,36 @@ struct EventsView: View {
             viewModel.fetchEvents(userInitiated: true)
         }
     }
+    
+    func displayName(for artist: Artist) -> String {
+        let rawName = artist.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        var qualifiers: [String] = []
+        
+        // Include location if provided and it isn't "rgv"
+        let trimmedLocation = artist.location.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedLocation.isEmpty, artist.location.lowercased() != "rgv" {
+            // You can choose to uppercase it or format it as needed.
+            qualifiers.append(trimmedLocation.uppercased())
+        }
+        
+        // Add debut flags if true
+        if artist.debut ?? false {
+            qualifiers.append("debut")
+        }
+        if artist.albumDebut ?? false {
+            qualifiers.append("album debut")
+        }
+        if artist.rgvDebut ?? false {
+            qualifiers.append("rgv debut")
+        }
+        
+        if !qualifiers.isEmpty {
+            return "\(rawName) (\(qualifiers.joined(separator: ", ")))"
+        } else {
+            return rawName
+        }
+    }
+    
     // Helper: Open Apple Maps with the provided address
     func openInMaps(address: String, city: String) {
         let fullAddress = "\(address), \(city)"

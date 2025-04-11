@@ -8,9 +8,10 @@ struct Venue: Identifiable, Codable {
     let state: String?
     let country: String?
     let link: String?
+    let debut: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case _id, name, address, city, state, country, link
+        case _id, name, address, city, state, country, link, debut
     }
 
     private enum OIDKeys: String, CodingKey {
@@ -35,6 +36,8 @@ struct Venue: Identifiable, Codable {
         self.state = try? container.decode(String.self, forKey: .state)
         self.country = try? container.decode(String.self, forKey: .country)
         self.link = try? container.decode(String.self, forKey: .link)
+        self.debut = try? container.decode(Bool.self, forKey: .debut)
+
     }
 
     func encode(to encoder: Encoder) throws {
@@ -46,5 +49,6 @@ struct Venue: Identifiable, Codable {
         try container.encodeIfPresent(state, forKey: .state)
         try container.encodeIfPresent(country, forKey: .country)
         try container.encodeIfPresent(link, forKey: .link)
+        try container.encodeIfPresent(debut, forKey: .debut)
     }
 }
