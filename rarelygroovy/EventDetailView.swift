@@ -10,6 +10,7 @@ struct EventDetailView: View {
             VStack(alignment: .center, spacing: 16) {
                 // Event summary (styled like the event cell)
                 VStack(alignment: .center, spacing: 8) {
+                    
                     // Venue name
                     if let venue = event.venue {
                         let venueName = venue.name ?? "Unknown"
@@ -32,15 +33,58 @@ struct EventDetailView: View {
                     
                     // Artists (joined with mid-dots)
                     if let artists = event.artists, !artists.isEmpty {
-                        let names = artists.map { displayName(for: $0) }
-                        let joinedNames = names.joined(separator: " · ")
-                        Text(joinedNames)
-                            .font(.subheadline)
+                        let artistLine = artists.enumerated().map { index, artist -> Text in
+                            var t = Text(artist.name)
+
+                            if artist.location != "RGV" {
+                                t = t + Text(",\(artist.location)")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
+                            }
+
+                            if artist.debut ?? false {
+                                t = t + Text(",DEBUT")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                            }
+
+                            if artist.albumDebut ?? false {
+                                t = t + Text(" ,ALBUM DEBUT")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                            }
+
+                            if artist.rgvDebut ?? false {
+                                t = t + Text(",RGV DEBUT")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                            }
+                            
+                            if artist.comeback ?? false {
+                                t = t + Text(",COMEBACK SHOW")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                            }
+                            if artist.lastShow ?? false {
+                                t = t + Text(",LAST SHOW")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                            }
+
+                            // Add separator if not last
+                            if index < artists.count - 1 {
+                                t = t + Text(" · ")
+                            }
+
+                            return t
+                        }.reduce(Text(""), +)
+
+                        artistLine
+                            .lineSpacing(15)
                             .multilineTextAlignment(.center)
-                            .lineSpacing(12)
-                            .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    
+
                     // Promoter
                     if let promoter = event.promoter {
                         Divider()
@@ -53,6 +97,7 @@ struct EventDetailView: View {
                             .foregroundColor(.secondary)
                     }
                     
+                    // Flyer  link, ticket link
                     HStack(spacing: 32) {
                         if let flyerLink = event.flyer,
                            flyerLink.lowercased() != "pending",
@@ -63,28 +108,10 @@ struct EventDetailView: View {
                                     Image(systemName: "doc.text.fill")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                    
-                                    // Compressed linear gradient overlay
-                                    LinearGradient(
-                                        gradient: Gradient(stops: [
-                                            .init(color: Color(#colorLiteral(red: 0.9882, green: 0.9333, blue: 0.1294, alpha: 1)), location: 0.0),  // Yellow (#FCEE21)
-                                            .init(color: Color(#colorLiteral(red: 0.96, green: 0.52, blue: 0.16, alpha: 1)), location: 0.20),      // Orange (#F58529)
-                                            .init(color: Color(#colorLiteral(red: 0.99, green: 0.18, blue: 0.0, alpha: 1)), location: 0.40),       // Red (#FC2F00)
-                                            .init(color: Color(#colorLiteral(red: 0.87, green: 0.16, blue: 0.48, alpha: 1)), location: 0.60),      // Magenta (#DD2A7B)
-                                            .init(color: Color(#colorLiteral(red: 0.51, green: 0.20, blue: 0.69, alpha: 1)), location: 0.80)       // Deep Purple (#8134AF)
-                                        ]),
-                                        startPoint: .bottomLeading,
-                                        endPoint: .topTrailing
-                                    )
-                                    .blendMode(.multiply)
-                                    .mask(
-                                        Image(systemName: "doc.text.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                    )
                                 }
                                 .frame(width: 24, height: 24)
                                 .padding(.vertical, 8)
+                                .foregroundColor(.secondary)
                             }
                         }
                         
@@ -103,16 +130,21 @@ struct EventDetailView: View {
                     
                     // Row for door time, show time, cover
                     HStack(spacing: 3) {
-                        if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }) {
+                        if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }),
+                           let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
+                            Text("doors \(doorStr), \(showStr)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }) {
                             Text("doors \(doorStr)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                        }
-                        if let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
+                        } else if let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
                             Text(showStr)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
+                        
                         if let showStr = event.dateTime.flatMap({ formatAsMonthDay($0) }) {
                             Text("·")
                             Text(showStr)
@@ -163,7 +195,14 @@ struct EventDetailView: View {
                         ForEach(artists) { artist in
                             VStack(alignment: .center, spacing: 4) {
                                 // Artist name with location (if not "rgv")
-                                Text(artist.name + (artist.location.uppercased() != "RGV" ? " (\(artist.location.uppercased()))" : ""))
+                                let nameText = Text(artist.name)
+                                let locationText = artist.location.uppercased() != "RGV"
+                                    ? Text(",\(artist.location)")
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                        .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
+                                    : Text("")
+
+                                (nameText + locationText)
                                     .font(.subheadline)
                                     .frame(maxWidth: .infinity, alignment: .center)
                                 
@@ -285,7 +324,6 @@ struct EventDetailView: View {
                 }
                 
                 // Promoter section
-                // Promoter section: only display if promoter info exists
                 if let promoter = event.promoter, promoter.link != "pending" {
                     Text("Promoter")
                         .font(.title)
@@ -314,7 +352,10 @@ struct EventDetailView: View {
                 Spacer()
             }
             .padding()
+            .frame(maxWidth: .infinity, alignment: .center)
+
         }
+        .frame(maxWidth: .infinity, alignment: .center)
         .refreshable {
             viewModel.fetchEvents(userInitiated: true)
         }
@@ -331,33 +372,3 @@ func openInMaps(address: String, city: String) {
         UIApplication.shared.open(url)
     }
 }
-
-func displayName(for artist: Artist) -> String {
-    let rawName = artist.name.trimmingCharacters(in: .whitespacesAndNewlines)
-    var qualifiers: [String] = []
-    
-    // Include location if provided and it isn't "rgv"
-    let trimmedLocation = artist.location.trimmingCharacters(in: .whitespacesAndNewlines)
-    if !trimmedLocation.isEmpty, artist.location.lowercased() != "rgv" {
-        // You can choose to uppercase it or format it as needed.
-        qualifiers.append(trimmedLocation.uppercased())
-    }
-    
-    // Add debut flags if true
-    if artist.debut ?? false {
-        qualifiers.append("debut")
-    }
-    if artist.albumDebut ?? false {
-        qualifiers.append("album debut")
-    }
-    if artist.rgvDebut ?? false {
-        qualifiers.append("rgv debut")
-    }
-    
-    if !qualifiers.isEmpty {
-        return "\(rawName) (\(qualifiers.joined(separator: ", ")))"
-    } else {
-        return rawName
-    }
-}
-

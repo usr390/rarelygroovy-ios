@@ -8,6 +8,364 @@ struct EventsView: View {
     @State private var selectedEventGenres = Set<String>()
     @State private var showDebutingOnly = false
     
+    var body: some View {
+        ZStack {
+            VStack {
+                ScrollView {
+                    // Search input field
+                    ZStack(alignment: .trailing) {
+                        TextField("Search events…", text: $searchQuery)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        if !searchQuery.isEmpty {
+                            Button {
+                                searchQuery = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 8)
+                            }
+                        }
+                    }
+                    .padding([.horizontal, .top])
+                    
+                    // Genre chip filters for events
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            // Create chips for each top-level genre (using your topLevelGenres property)
+                            ForEach(topLevelGenres, id: \.self) { topLevel in
+                                let isSelected = selectedEventGenres.contains(topLevel)
+                                Button {
+                                    if isSelected {
+                                        selectedEventGenres.remove(topLevel)
+                                    } else {
+                                        selectedEventGenres.insert(topLevel)
+                                    }
+                                } label: {
+                                    Text(topLevel.capitalized)
+                                        .font(.subheadline)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(isSelected ? Color.primary : Color.gray.opacity(0.3))
+                                        .foregroundColor(isSelected ? Color.black : .primary)
+                                        .cornerRadius(16)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 8)
+                    }
+                    .padding(.vertical, 8)
+                                        
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            
+                            // Debuting chip: only show if any event has a debuting artist.
+                            if hasDebutingArtist {
+                                Button(action: {
+                                    showDebutingOnly.toggle()
+                                }) {
+                                    HStack {
+                                        Text("Debuting")
+                                        Image(systemName: "sparkles")
+                                            .imageScale(.medium)
+                                    }
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(showDebutingOnly ? Color.primary : Color.gray.opacity(0.3))
+                                    .foregroundColor(showDebutingOnly ? Color.black : .primary)
+                                    .cornerRadius(16)
+                                }
+                            }
+                            
+                            // Touring chip
+                            Button(action: {
+                                nonRGVOnly.toggle()
+                            }) {
+                                HStack {
+                                    Text("Touring")
+                                    Image(systemName: "bus")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(nonRGVOnly ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(nonRGVOnly ? Color.black : .primary)
+                                .cornerRadius(16)
+                            }
+                            
+                            // Recently Added chip
+                            Button(action: {
+                                recentlyAddedOnly.toggle()
+                            }) {
+                                HStack {
+                                    Text("Recently Added")
+                                    Image(systemName: "clock")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(recentlyAddedOnly ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(recentlyAddedOnly ? Color.black : .primary)
+                                .cornerRadius(16)
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal, 8)
+                    }
+                    .padding(.bottom, 8)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Check if any events match the search criteria
+                        if filteredEvents.isEmpty && !viewModel.isLoading && !searchQuery.isEmpty {
+                            Text("No events match search criteria.")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding()
+                        } else {
+                            // Group filtered events by day and iterate
+                            ForEach(Array(groupEventsByDay(filteredEvents).enumerated()), id: \.element.dayStart) { (index, dayGroup) in
+                                
+                                
+                                
+                                // Day header with conditional top padding
+                                Text(dayGroup.dayLabel)
+                                    .font(.title)
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, index == 0 ? 0 : 50)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                
+                                Divider()
+                                
+                                // For each event in that day...
+                                ForEach(dayGroup.events.indices, id: \.self) { i in
+                                    let event = dayGroup.events[i]
+                                    NavigationLink(destination: EventDetailView(event: event)) {
+                                        VStack(alignment: .center, spacing: 8) {
+                                            
+                                            if let label = listingLabel(for: event, recentlyAddedActive: recentlyAddedOnly) {
+                                                Text(label)
+                                                    .font(.footnote)
+                                                    .foregroundColor(.secondary)
+                                                    .italic()
+                                            }
+                                            
+                                            if let venue = event.venue {
+                                                let venueName = venue.name ?? "Unknown"
+                                                // Use a regex to find text in parentheses
+                                                if let range = venueName.range(of: #"(\(.*\))"#, options: .regularExpression) {
+                                                    let mainText = String(venueName[..<range.lowerBound])
+                                                    let parenText = String(venueName[range])
+                                                    // Concatenate two Text views with different fonts
+                                                    (Text(mainText)
+                                                        .font(.title)
+                                                     + Text(parenText)
+                                                        .font(.footnote))
+                                                    .multilineTextAlignment(.center)
+                                                } else {
+                                                    Text(venueName)
+                                                        .font(.title)
+                                                        .multilineTextAlignment(.center)
+                                                }
+                                            }
+                                            
+                                            if let artists = event.artists, !artists.isEmpty {
+                                                let artistLine = artists.enumerated().map { index, artist -> Text in
+                                                    var t = Text(artist.name)
+
+                                                    if artist.location != "RGV" {
+                                                        t = t + Text(",\(artist.location)")
+                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                            .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
+                                                    }
+
+                                                    if artist.debut ?? false {
+                                                        t = t + Text(",DEBUT")
+                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                    }
+
+                                                    if artist.albumDebut ?? false {
+                                                        t = t + Text(" ,ALBUM DEBUT")
+                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                    }
+
+                                                    if artist.rgvDebut ?? false {
+                                                        t = t + Text(",RGV DEBUT")
+                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                    }
+                                                    
+                                                    if artist.comeback ?? false {
+                                                        t = t + Text(",COMEBACK SHOW")
+                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                    }
+                                                    if artist.lastShow ?? false {
+                                                        t = t + Text(",LAST SHOW")
+                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                    }
+
+                                                    // Add separator if not last
+                                                    if index < artists.count - 1 {
+                                                        t = t + Text(" · ")
+                                                    }
+
+                                                    return t
+                                                }.reduce(Text(""), +)
+
+                                                artistLine
+                                                    .lineSpacing(15)
+                                                    .multilineTextAlignment(.center)
+                                                    .frame(maxWidth: .infinity, alignment: .center)
+                                            }
+                                            
+                                            // Promoter
+                                            if let promoter = event.promoter {
+                                                Divider()
+                                                    .frame(width: 50, height: 1)
+                                                    .background(Color.gray)
+                                                    .padding(.vertical, 8)
+                                                
+                                                Text(promoter.name ?? "Unknown")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            
+                                            // Flyer link, ticket link
+                                            HStack(spacing: 32) {
+                                                if let flyerLink = event.flyer,
+                                                   flyerLink.lowercased() != "pending",
+                                                   let url = URL(string: flyerLink) {
+                                                    Link(destination: url) {
+                                                        ZStack {
+                                                            Image(systemName: "doc.text.fill")
+                                                                .resizable()
+                                                                .aspectRatio(contentMode: .fit)
+                                                        }
+                                                        .frame(width: 24, height: 24)
+                                                        .padding(.vertical, 8)
+                                                        .foregroundColor(.secondary)
+                                                    }
+                                                }
+                                                
+                                                if let ticketsLink = event.tickets,
+                                                   ticketsLink.lowercased() != "pending",
+                                                   let url = URL(string: ticketsLink) {
+                                                    Link(destination: url) {
+                                                        Image(systemName: "ticket.fill")
+                                                            .resizable()
+                                                            .frame(width: 24, height: 24)
+                                                            .padding(.vertical, 8)
+                                                            .foregroundColor(.secondary)
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Row for door time, show time, cover
+                                            HStack(spacing: 3) {
+                                                if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }),
+                                                   let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
+                                                    Text("doors \(doorStr), \(showStr)")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                } else if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }) {
+                                                    Text("doors \(doorStr)")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                } else if let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
+                                                    Text(showStr)
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                }
+                                                
+                                                if let showStr = event.dateTime.flatMap({ formatAsMonthDay($0) }) {
+                                                    Text("·")
+                                                    Text(showStr)
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                }
+                                                if let cover = event.cover {
+                                                    Text("·")
+                                                    if cover == 0 {
+                                                        Text("No Cover")
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.secondary)
+                                                    } else {
+                                                        Text("$\(cover)")
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.secondary)
+                                                    }
+                                                }
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .center)
+                                            .onTapGesture {
+                                                if let venue = event.venue,
+                                                   let city = venue.city,
+                                                   let address = venue.address {
+                                                    openInMaps(address: address, city: city)
+                                                }
+                                            }
+                                            
+                                            // Address
+                                            if let venue = event.venue,
+                                               let city = venue.city,
+                                               let address = venue.address {
+                                                Text("\(address), \(city)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                                    .multilineTextAlignment(.center)
+                                                    .padding(.bottom, 50)
+                                            }
+                                            
+                                            Divider()
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .padding(.vertical, 16)
+                                    }
+                                }
+                            }
+                            
+                            if !viewModel.isLoading && !viewModel.events.isEmpty {
+                                Text("* Start times might vary (e.g., punk time)")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .padding()
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical)
+                    .padding(.horizontal)
+                }
+            }
+            
+            if viewModel.isLoading {
+                VStack {
+                    Spacer()
+                    ProgressView("Loading Events...")
+                        .progressViewStyle(CircularProgressViewStyle())
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(UIColor.systemBackground).opacity(0.8))
+            }
+        }
+        .onAppear {
+            if viewModel.events.isEmpty {
+                viewModel.fetchEvents()
+            }
+        }
+        .refreshable {
+            viewModel.fetchEvents(userInitiated: true)
+        }
+    }
+
+    
     // Dictionary mapping top-level genres to subgenres
     let genreMapping: [String: [String]] = [
         "rock": [
@@ -86,14 +444,11 @@ struct EventsView: View {
             "fusion", "indie", "ebm", "dsmb", "alternative folk", "piano", "lounge", "indie soul"
         ]
     ]
-    
     private var topLevelGenres: [String] {
         let desiredOrder = ["rock", "punk", "metal", "experimental", "edm",
                             "rap", "jazz", "pop", "latin", "other"]
         return desiredOrder.filter { genreMapping.keys.contains($0) }
     }
-
-
     func sanitize(_ string: String) -> String {
         return string.folding(options: .diacriticInsensitive, locale: .current)
                      .lowercased()
@@ -101,14 +456,12 @@ struct EventsView: View {
                      .joined()
                      .trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
     // Helper: parse ISO8601 string for event creation dates
     private func parseCreatedAt(_ isoString: String) -> Date? {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter.date(from: isoString)
     }
-
     var filteredEvents: [Event] {
         let trimmedQuery = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
         var events = trimmedQuery.isEmpty ? viewModel.events : viewModel.events.filter { event in
@@ -168,7 +521,6 @@ struct EventsView: View {
         
         return events
     }
-
     // Helper computed property to determine if there is any event with debuting info
     private var hasDebutingArtist: Bool {
         return viewModel.events.contains { event in
@@ -180,363 +532,6 @@ struct EventsView: View {
             return venueDebut || promoterDebut || artistDebut
         }
     }
-    
-    
-    var body: some View {
-        ZStack {
-            VStack {
-                ScrollView {
-                    // Search input field
-                    ZStack(alignment: .trailing) {
-                        TextField("Search events…", text: $searchQuery)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        if !searchQuery.isEmpty {
-                            Button {
-                                searchQuery = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                                    .padding(.trailing, 8)
-                            }
-                        }
-                    }
-                    .padding([.horizontal, .top])
-                    
-                    // Genre chip filters for events
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            // Create chips for each top-level genre (using your topLevelGenres property)
-                            ForEach(topLevelGenres, id: \.self) { topLevel in
-                                let isSelected = selectedEventGenres.contains(topLevel)
-                                Button {
-                                    if isSelected {
-                                        selectedEventGenres.remove(topLevel)
-                                    } else {
-                                        selectedEventGenres.insert(topLevel)
-                                    }
-                                } label: {
-                                    Text(topLevel.capitalized)
-                                        .font(.subheadline)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(isSelected ? Color.primary : Color.gray.opacity(0.3))
-                                        .foregroundColor(isSelected ? Color.black : .primary)
-                                        .cornerRadius(16)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 8)
-                    }
-                    .padding(.vertical, 8)
-                                        
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            // Touring chip
-                            Button(action: {
-                                nonRGVOnly.toggle()
-                            }) {
-                                HStack {
-                                    Text("Touring")
-                                    Image(systemName: "bus")
-                                        .imageScale(.medium)
-                                }
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(nonRGVOnly ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(nonRGVOnly ? Color.black : .primary)
-                                .cornerRadius(16)
-                            }
-                            
-                            // Recently Added chip
-                            Button(action: {
-                                recentlyAddedOnly.toggle()
-                            }) {
-                                HStack {
-                                    Text("Recently Added")
-                                    Image(systemName: "clock")
-                                        .imageScale(.medium)
-                                }
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(recentlyAddedOnly ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(recentlyAddedOnly ? Color.black : .primary)
-                                .cornerRadius(16)
-                            }
-                            
-                            // Debuting chip: only show if any event has a debuting artist.
-                            if hasDebutingArtist {
-                                Button(action: {
-                                    showDebutingOnly.toggle()
-                                }) {
-                                    HStack {
-                                        Text("Debuting")
-                                        Image(systemName: "sparkles")
-                                            .imageScale(.medium)
-                                    }
-                                    .font(.subheadline)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(showDebutingOnly ? Color.primary : Color.gray.opacity(0.3))
-                                    .foregroundColor(showDebutingOnly ? Color.black : .primary)
-                                    .cornerRadius(16)
-                                }
-                            }
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal, 8)
-                    }
-                    .padding(.bottom, 8)
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Check if any events match the search criteria
-                        if filteredEvents.isEmpty && !viewModel.isLoading && !searchQuery.isEmpty {
-                            Text("No events match search criteria.")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                                .padding()
-                        } else {
-                            // Group filtered events by day and iterate
-                            ForEach(Array(groupEventsByDay(filteredEvents).enumerated()), id: \.element.dayStart) { (index, dayGroup) in
-                                
-                                
-                                
-                                // Day header with conditional top padding
-                                Text(dayGroup.dayLabel)
-                                    .font(.title)
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, index == 0 ? 0 : 50)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                
-                                Divider()
-                                
-                                // For each event in that day...
-                                ForEach(dayGroup.events.indices, id: \.self) { i in
-                                    let event = dayGroup.events[i]
-                                    NavigationLink(destination: EventDetailView(event: event)) {
-                                        VStack(alignment: .center, spacing: 8) {
-                                            
-                                            if let label = listingLabel(for: event, recentlyAddedActive: recentlyAddedOnly) {
-                                                Text(label)
-                                                    .font(.footnote)
-                                                    .foregroundColor(.secondary)
-                                                    .italic()
-                                            }
-                                            
-                                            if let venue = event.venue {
-                                                let venueName = venue.name ?? "Unknown"
-                                                // Use a regex to find text in parentheses
-                                                if let range = venueName.range(of: #"(\(.*\))"#, options: .regularExpression) {
-                                                    let mainText = String(venueName[..<range.lowerBound])
-                                                    let parenText = String(venueName[range])
-                                                    // Concatenate two Text views with different fonts
-                                                    (Text(mainText)
-                                                        .font(.title)
-                                                     + Text(parenText)
-                                                        .font(.footnote))
-                                                    .multilineTextAlignment(.center)
-                                                } else {
-                                                    Text(venueName)
-                                                        .font(.title)
-                                                        .multilineTextAlignment(.center)
-                                                }
-                                            }
-                                            
-                                            // Artists (joined with mid-dots)
-                                            if let artists = event.artists, !artists.isEmpty {
-                                                let names = artists.map { displayName(for: $0) }
-                                                let joinedNames = names.joined(separator: " · ")
-                                                Text(joinedNames)
-                                                    .font(.subheadline)
-                                                    .multilineTextAlignment(.center)
-                                                    .lineSpacing(12)
-                                                    .frame(maxWidth: .infinity)
-                                            }
-                                            
-                                            // Promoter
-                                            if let promoter = event.promoter {
-                                                Divider()
-                                                    .frame(width: 50, height: 1)
-                                                    .background(Color.gray)
-                                                    .padding(.vertical, 8)
-                                                
-                                                Text(promoter.name ?? "Unknown")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            
-                                            // Additional event details...
-                                            HStack(spacing: 32) {
-                                                if let flyerLink = event.flyer,
-                                                   flyerLink.lowercased() != "pending",
-                                                   let url = URL(string: flyerLink) {
-                                                    Link(destination: url) {
-                                                        ZStack {
-                                                            Image(systemName: "doc.text.fill")
-                                                                .resizable()
-                                                                .aspectRatio(contentMode: .fit)
-                                                            LinearGradient(
-                                                                gradient: Gradient(stops: [
-                                                                    .init(color: Color(#colorLiteral(red: 0.9882, green: 0.9333, blue: 0.1294, alpha: 1)), location: 0.0),
-                                                                    .init(color: Color(#colorLiteral(red: 0.96, green: 0.52, blue: 0.16, alpha: 1)), location: 0.20),
-                                                                    .init(color: Color(#colorLiteral(red: 0.99, green: 0.18, blue: 0.0, alpha: 1)), location: 0.40),
-                                                                    .init(color: Color(#colorLiteral(red: 0.87, green: 0.16, blue: 0.48, alpha: 1)), location: 0.60),
-                                                                    .init(color: Color(#colorLiteral(red: 0.51, green: 0.20, blue: 0.69, alpha: 1)), location: 0.80)
-                                                                ]),
-                                                                startPoint: .bottomLeading,
-                                                                endPoint: .topTrailing
-                                                            )
-                                                            .blendMode(.multiply)
-                                                            .mask(
-                                                                Image(systemName: "doc.text.fill")
-                                                                    .resizable()
-                                                                    .aspectRatio(contentMode: .fit)
-                                                            )
-                                                        }
-                                                        .frame(width: 24, height: 24)
-                                                        .padding(.vertical, 8)
-                                                    }
-                                                }
-                                                
-                                                if let ticketsLink = event.tickets,
-                                                   ticketsLink.lowercased() != "pending",
-                                                   let url = URL(string: ticketsLink) {
-                                                    Link(destination: url) {
-                                                        Image(systemName: "ticket.fill")
-                                                            .resizable()
-                                                            .frame(width: 24, height: 24)
-                                                            .padding(.vertical, 8)
-                                                            .foregroundColor(.secondary)
-                                                    }
-                                                }
-                                            }
-                                            
-                                            // Row for door time, show time, cover
-                                            HStack(spacing: 3) {
-                                                if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }) {
-                                                    Text("doors \(doorStr)")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                                if let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
-                                                    Text(showStr)
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                                if let showStr = event.dateTime.flatMap({ formatAsMonthDay($0) }) {
-                                                    Text("·")
-                                                    Text(showStr)
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                                if let cover = event.cover {
-                                                    Text("·")
-                                                    if cover == 0 {
-                                                        Text("No Cover")
-                                                            .font(.subheadline)
-                                                            .foregroundColor(.secondary)
-                                                    } else {
-                                                        Text("$\(cover)")
-                                                            .font(.subheadline)
-                                                            .foregroundColor(.secondary)
-                                                    }
-                                                }
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .center)
-                                            .onTapGesture {
-                                                if let venue = event.venue,
-                                                   let city = venue.city,
-                                                   let address = venue.address {
-                                                    openInMaps(address: address, city: city)
-                                                }
-                                            }
-                                            
-                                            // Address
-                                            if let venue = event.venue,
-                                               let city = venue.city,
-                                               let address = venue.address {
-                                                Text("\(address), \(city)")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.bottom, 50)
-                                            }
-                                            
-                                            Divider()
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 16)
-                                    }
-                                }
-                            }
-                            
-                            if !viewModel.isLoading && !viewModel.events.isEmpty {
-                                Text("* Start times might vary (e.g., punk time)")
-                                    .font(.footnote)
-                                    .foregroundColor(.secondary)
-                                    .padding()
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical)
-                    .padding(.horizontal)
-                }
-            }
-            
-            if viewModel.isLoading {
-                VStack {
-                    Spacer()
-                    ProgressView("Loading Events...")
-                        .progressViewStyle(CircularProgressViewStyle())
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(UIColor.systemBackground).opacity(0.8))
-            }
-        }
-        .onAppear {
-            if viewModel.events.isEmpty {
-                viewModel.fetchEvents()
-            }
-        }
-        .refreshable {
-            viewModel.fetchEvents(userInitiated: true)
-        }
-    }
-    
-    func displayName(for artist: Artist) -> String {
-        let rawName = artist.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        var qualifiers: [String] = []
-        
-        // Include location if provided and it isn't "rgv"
-        let trimmedLocation = artist.location.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedLocation.isEmpty, artist.location.lowercased() != "rgv" {
-            // You can choose to uppercase it or format it as needed.
-            qualifiers.append(trimmedLocation.uppercased())
-        }
-        
-        // Add debut flags if true
-        if artist.debut ?? false {
-            qualifiers.append("debut")
-        }
-        if artist.albumDebut ?? false {
-            qualifiers.append("album debut")
-        }
-        if artist.rgvDebut ?? false {
-            qualifiers.append("rgv debut")
-        }
-        
-        if !qualifiers.isEmpty {
-            return "\(rawName) (\(qualifiers.joined(separator: ", ")))"
-        } else {
-            return rawName
-        }
-    }
-    
     // Helper: Open Apple Maps with the provided address
     func openInMaps(address: String, city: String) {
         let fullAddress = "\(address), \(city)"
@@ -547,7 +542,6 @@ struct EventsView: View {
             UIApplication.shared.open(url)
         }
     }
-    
     // MARK: - Group events by day
     private func groupEventsByDay(_ events: [Event]) -> [DayGroup] {
         var dictionary = [Date: [Event]]()
@@ -573,20 +567,17 @@ struct EventsView: View {
         
         return results
     }
-    
     // Parse an ISO8601 date
     private func parseISODate(_ isoString: String) -> Date? {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return isoFormatter.date(from: isoString)
     }
-    
     // Truncate a date to midnight
     private func startOfDay(for date: Date) -> Date {
         let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
         return Calendar.current.date(from: comps) ?? date
     }
-    
     // Convert a date to "Today", "Tomorrow", or "EEEE, MMMM d"
     private func dayLabel(for day: Date) -> String {
         let calendar = Calendar.current
@@ -623,17 +614,23 @@ func formatAsLocalTime(_ isoString: String) -> String? {
     let isoFormatter = ISO8601DateFormatter()
     isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     guard let date = isoFormatter.date(from: isoString) else { return nil }
+
     let timeFormatter = DateFormatter()
     timeFormatter.dateFormat = "h:mma"
     timeFormatter.locale = Locale(identifier: "en_US_POSIX")
     timeFormatter.timeZone = .current
-    let rawTime = timeFormatter.string(from: date)
-    let finalTime = rawTime
+
+    var time = timeFormatter.string(from: date)
         .replacingOccurrences(of: "AM", with: "am")
         .replacingOccurrences(of: "PM", with: "pm")
-    return finalTime
-}
 
+    // Remove ":00" if it's a whole hour
+    if time.contains(":00") {
+        time = time.replacingOccurrences(of: ":00", with: "")
+    }
+
+    return time
+}
 func formatAsMonthDay(_ isoString: String) -> String? {
     let isoFormatter = ISO8601DateFormatter()
     isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -644,8 +641,6 @@ func formatAsMonthDay(_ isoString: String) -> String? {
     dateFormatter.timeZone = .current
     return dateFormatter.string(from: date)
 }
-
-
 func listingLabel(for event: Event, recentlyAddedActive: Bool) -> String? {
     // Only show the label if the Recently Added filter is active
     guard recentlyAddedActive else { return nil }
@@ -675,7 +670,6 @@ func parseISODate(_ isoString: String) -> Date? {
     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     return formatter.date(from: isoString)
 }
-
 func isElevenFiftyNinePM(_ isoString: String) -> Bool {
     let formatter = ISO8601DateFormatter()
     if let date = formatter.date(from: isoString) {

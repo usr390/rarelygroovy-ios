@@ -308,7 +308,14 @@ struct ArtistDirectoryView: View {
                                             .padding([.top, .trailing], 4)
                                     }
                                     // Artist name with location (if not "rgv")
-                                    Text(artist.name + (artist.location.uppercased() != "RGV" ? " (\(artist.location.uppercased()))" : ""))
+                                    let nameText = Text(artist.name)
+                                    let locationText = artist.location.uppercased() != "RGV"
+                                        ? Text(",\(artist.location)")
+                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                            .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
+                                        : Text("")
+
+                                    (nameText + locationText)
                                         .font(.subheadline)
                                         .frame(maxWidth: .infinity, alignment: .center)
                                     // Prepare display parts
@@ -324,9 +331,9 @@ struct ArtistDirectoryView: View {
                                             let startYear = String(artist.start.prefix(4))
                                             if let endVal = artist.end, !endVal.isEmpty, endVal.lowercased() != "pending" {
                                                 let endYear = String(endVal.prefix(4))
-                                                primary = "\(startYear) - \(endYear)"
+                                                primary = "\(startYear) - \(endYear), \(artist.status)"
                                             } else {
-                                                primary = "\(startYear) - current"
+                                                primary = "\(startYear) - \(artist.status)"
                                             }
                                         }
                                         
@@ -436,7 +443,6 @@ struct ArtistDirectoryView: View {
                     }
                     .padding(.horizontal)
                 }
-                .navigationTitle("Artist Directory")
                 .refreshable {
                     viewModel.fetchArtists(userInitiated: true)
                 }

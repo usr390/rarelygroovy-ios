@@ -10,7 +10,7 @@ struct MainTabView: View {
             NavigationView {
                 EventsView()
                     .navigationTitle("Events")
-                    .navigationBarTitleDisplayMode(.large)
+                    .navigationBarTitleDisplayMode(.inline)
             }
             .tag(0)
             .tabItem { Label("Events", systemImage: "calendar") }
@@ -18,7 +18,7 @@ struct MainTabView: View {
             NavigationView {
                 ArtistDirectoryView()
                     .navigationTitle("Artist Directory")
-                    .navigationBarTitleDisplayMode(.large)
+                    .navigationBarTitleDisplayMode(.inline)
             }
             .tag(1)
             .tabItem { Label("Artist Directory", systemImage: "music.mic") }
@@ -26,7 +26,7 @@ struct MainTabView: View {
             NavigationView {
                 AddEventView()
                     .navigationTitle("Add Event")
-                    .navigationBarTitleDisplayMode(.large)
+                    .navigationBarTitleDisplayMode(.inline)
             }
             .tag(2)
             .tabItem { Label("Add Event", systemImage: "plus") }

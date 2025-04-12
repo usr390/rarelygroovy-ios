@@ -6,7 +6,7 @@ struct Artist: Identifiable, Codable {
     let link: String
     let location: String
     let medium: String?
-    let status: String?
+    let status: String
     let links: [String: String]?
     let debut: Bool?
     let albumDebut: Bool?
@@ -18,10 +18,12 @@ struct Artist: Identifiable, Codable {
     let start2: String?
     let end2: String?
     let status2: String?
+    let comeback: Bool?
+
 
 
     enum CodingKeys: String, CodingKey {
-        case _id, name, link, location, medium, status, links, debut, albumDebut, rgvDebut, lastShow, start, end, genre, start2, end2, status2
+        case _id, name, link, location, medium, status, links, debut, albumDebut, rgvDebut, lastShow, start, end, genre, start2, end2, status2, comeback
     }
 
     private enum OIDKeys: String, CodingKey {
@@ -44,7 +46,7 @@ struct Artist: Identifiable, Codable {
         self.link = try container.decode(String.self, forKey: .link)
         self.location = try container.decode(String.self, forKey: .location)
         self.medium = try? container.decode(String.self, forKey: .medium)
-        self.status = try? container.decode(String.self, forKey: .status)
+        self.status = try container.decode(String.self, forKey: .status)
         self.links = try? container.decode([String: String].self, forKey: .links)
         self.debut = try? container.decode(Bool.self, forKey: .debut)
         self.albumDebut = try? container.decode(Bool.self, forKey: .albumDebut)
@@ -56,6 +58,8 @@ struct Artist: Identifiable, Codable {
         self.start2 = try? container.decode(String.self, forKey: .start2)
         self.end2 = try? container.decode(String.self, forKey: .end2)
         self.status2 = try? container.decode(String.self, forKey: .status2)
+        self.comeback = try? container.decode(Bool.self, forKey: .comeback)
+
 
     }
 
@@ -66,7 +70,7 @@ struct Artist: Identifiable, Codable {
         try container.encode(link, forKey: .link)
         try container.encode(location, forKey: .location)
         try container.encodeIfPresent(medium, forKey: .medium)
-        try container.encodeIfPresent(status, forKey: .status)
+        try container.encode(status, forKey: .status)
         try container.encodeIfPresent(links, forKey: .links)
         try container.encodeIfPresent(debut, forKey: .debut)
         try container.encodeIfPresent(albumDebut, forKey: .albumDebut)
@@ -78,6 +82,6 @@ struct Artist: Identifiable, Codable {
         try container.encodeIfPresent(start2, forKey: .start2)
         try container.encodeIfPresent(end2, forKey: .end2)
         try container.encodeIfPresent(status2, forKey: .status2)
-
+        try container.encodeIfPresent(comeback, forKey: .comeback)
     }
 }

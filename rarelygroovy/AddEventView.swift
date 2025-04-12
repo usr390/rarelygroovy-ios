@@ -223,7 +223,7 @@ struct OptionalDatePickerOverlay: View {
 struct VenueAutoCompleteOverlay: View {
     @Binding var text: String
     @Binding var selectedVenue: Venue?
-    let suggestions: [Venue]  // now an array of Venue objects
+    let suggestions: [Venue]  // array of Venue objects
     let title: String
     @Environment(\.dismiss) var dismiss
 
@@ -259,12 +259,22 @@ struct VenueAutoCompleteOverlay: View {
                         dismiss()
                     }) {
                         HStack {
-                            Text(venue.name ?? "Unknown")
+                            VStack(alignment: .leading) {
+                                // Venue name
+                                if let city = venue.city, !city.isEmpty {
+                                    (Text(venue.name ?? "Unknown")
+                                        + Text(" \(city)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary))
+                                } else {
+                                    Text(venue.name ?? "Unknown")
+                                }
+                            }
                             Spacer()
                         }
-                        .contentShape(Rectangle()) // ensures the full row is tappable
+                        .contentShape(Rectangle()) // makes the whole row tappable
                     }
-                    .buttonStyle(PlainButtonStyle()) // removes default button styling
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .listStyle(PlainListStyle())
             }
@@ -348,6 +358,7 @@ struct PromoterAutoCompleteOverlay: View {
         }
     }
 }
+
 struct ArtistAutoCompleteOverlay: View {
     @Binding var text: String
     @Binding var selectedArtist: Artist?
@@ -387,26 +398,29 @@ struct ArtistAutoCompleteOverlay: View {
                         dismiss()
                     }) {
                         HStack {
-                            Text(artist.name)
+                            if !artist.location.isEmpty && artist.location.lowercased() != "rgv" {
+                                (Text(artist.name)
+                                    + Text(",\(artist.location)")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86)))
+                            } else {
+                                Text(artist.name)
+                            }
                             Spacer()
                         }
-                        .contentShape(Rectangle()) // ensures the entire row is tappable
+                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(PlainButtonStyle()) // keeps default text look
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .listStyle(PlainListStyle())
             }
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -426,6 +440,12 @@ struct PasteTextField: UIViewRepresentable {
         textField.addTarget(context.coordinator,
                             action: #selector(Coordinator.textDidChange(_:)),
                             for: .editingChanged)
+        
+        // the key part:
+        textField.adjustsFontSizeToFitWidth = false
+        textField.minimumFontSize = 12
+
+        
         return textField
     }
     
@@ -689,7 +709,7 @@ struct AddEventView: View {
                         }
                         Button(action: {
                             artistNames.append("")
-                            selectedArtists.append(nil)  // New artist field starts with no selection.
+                            selectedArtists.append(nil)
                             selectedArtistIndex = artistNames.count - 1
                         }) {
                             HStack {
@@ -701,9 +721,11 @@ struct AddEventView: View {
                                     .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                                     .font(.footnote)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading) // ← left-aligned AND full-width tappable
+                            .contentShape(Rectangle())
                         }
                         .disabled(artistNames.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-                        .padding(.top, 4) // <- this is the tweak
+                        .padding(.top, 4)
                     }
                     .padding(.horizontal)
                     
@@ -711,11 +733,17 @@ struct AddEventView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Flyer Link")
                             .font(.headline)
-                        
-                        PasteTextField(text: $flyerLink, placeholder: "Paste URL here")
+
+                        TextField("Paste URL here", text: $flyerLink)
+                            .textContentType(.URL)
+                            .autocorrectionDisabled(true)
+                            .keyboardType(.URL)
                             .padding()
+                            .frame(maxWidth: .infinity)
                             .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                         
                         // Use the helper to check the URL's host
                         if !flyerLink.isEmpty, !isTrustedFlyerLink(flyerLink) {
@@ -938,7 +966,10 @@ struct AddEventView: View {
                 eventData["doorTime"] = isoFormatter.string(from: doorCombined)
             }
         } else {
-            eventData["doorTime"] = ""
+            // fallback to event date at 11:59pm, regardless of doorTime
+            if let fallbackTime = Calendar.current.date(bySettingHour: 23, minute: 59, second: 0, of: eventDateAtStart) {
+                eventData["dateTime"] = isoFormatter.string(from: fallbackTime)
+            }
         }
 
         // 3. "dateTime": Combine the date from eventDate with the time from showTime.
@@ -1026,6 +1057,7 @@ struct AddEventView: View {
         showSuccess = true
         resetForm()
     }
+    
     func resetForm() {
         venueName = ""
         promoterName = ""
