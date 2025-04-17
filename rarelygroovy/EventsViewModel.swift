@@ -31,7 +31,9 @@ class EventsViewModel: ObservableObject {
         }
     }
     
+    
     func fetchEvents(userInitiated: Bool = false) {
+        
         if firstLoad || !userInitiated {
             DispatchQueue.main.async { self.isLoading = true }
         }

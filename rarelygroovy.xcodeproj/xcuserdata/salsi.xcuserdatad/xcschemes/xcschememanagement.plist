@@ -4,10 +4,35 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>rarelygroovy.xcscheme_^#shared#^_</key>
+		<key>rarelygroovy (SK Config).xcscheme</key>
 		<dict>
 			<key>orderHint</key>
+			<integer>6</integer>
+		</dict>
+		<key>rarelygroovy.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>isShown</key>
+			<true/>
+			<key>orderHint</key>
 			<integer>5</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>B7D498702D8A3481007DC1D7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B7D498802D8A3484007DC1D7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B7D4988A2D8A3484007DC1D7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

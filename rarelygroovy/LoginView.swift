@@ -56,6 +56,7 @@ struct LoginFormView: View {
                     .foregroundColor(.red)
             }
             Button(action: {
+                UIApplication.shared.hideKeyboard()
                 // Prevent request if form is invalid
                 guard isFormValid else {
                     errorMessage = "Please fill in all fields."
@@ -83,3 +84,4 @@ struct LoginFormView: View {
         .padding()
     }
 }
+

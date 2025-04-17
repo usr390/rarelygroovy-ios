@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct EventsView: View {
+    
     @StateObject private var viewModel = EventsViewModel()
     @State private var searchQuery = ""
     @State private var nonRGVOnly = false  // New chip filter state
@@ -614,6 +615,13 @@ func formatAsLocalTime(_ isoString: String) -> String? {
     let isoFormatter = ISO8601DateFormatter()
     isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
     guard let date = isoFormatter.date(from: isoString) else { return nil }
+    
+    // check if time is 11:59pm
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.hour, .minute], from: date)
+    if components.hour == 23 && components.minute == 59 {
+        return nil
+    }
 
     let timeFormatter = DateFormatter()
     timeFormatter.dateFormat = "h:mma"

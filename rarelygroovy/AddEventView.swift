@@ -74,7 +74,7 @@ struct OptionalTimeInputView: View {
             
             Button(action: {
                 // When tapping, use the existing time or current time as a default.
-                tempTime = time ?? Date()
+                tempTime = time ?? defaultTimeAt6PM()
                 showPicker = true
             }) {
                 HStack {
@@ -86,8 +86,6 @@ struct OptionalTimeInputView: View {
                             .foregroundColor(.secondary)
                     }
                     Spacer()
-                    Image(systemName: "clock")
-                        .foregroundColor(.secondary)
                 }
                 .padding()
                 .background(Color(UIColor.secondarySystemBackground))
@@ -103,6 +101,13 @@ struct OptionalTimeInputView: View {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+    
+    func defaultTimeAt6PM() -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = 18
+        components.minute = 0
+        return Calendar.current.date(from: components) ?? Date()
     }
 }
 struct OptionalTimePickerOverlay: View {
@@ -168,8 +173,6 @@ struct OptionalDateInputView: View {
                             .foregroundColor(.secondary)
                     }
                     Spacer()
-                    Image(systemName: "calendar")
-                        .foregroundColor(.secondary)
                 }
                 .padding()
                 .background(Color(UIColor.secondarySystemBackground))
@@ -314,6 +317,7 @@ struct PromoterAutoCompleteOverlay: View {
             VStack {
                 ZStack(alignment: .trailing) {
                     TextField("Search...", text: $text)
+                        .autocorrectionDisabled(true)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
                     if !text.isEmpty {
@@ -379,6 +383,7 @@ struct ArtistAutoCompleteOverlay: View {
             VStack {
                 ZStack(alignment: .trailing) {
                     TextField("Search...", text: $text)
+                        .autocorrectionDisabled(true)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
                     if !text.isEmpty {
@@ -495,39 +500,35 @@ struct SuccessOverlay: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-
-            Image(systemName: "checkmark.circle.fill")
-                .resizable()
-                .frame(width: 60, height: 60)
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-
-            Text("Thanks!")
-                .font(.headline)
-
-            Text("We'll review your event and make it available shortly!")
-                .multilineTextAlignment(.center)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .padding(.horizontal)
-
-            HStack(spacing: 20) {
-                Button(action: {
+        ZStack {
+            // Tap anywhere to dismiss
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
                     doneAction()
                     dismiss()
-                }) {
-                    Text("dismiss")
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(colorScheme == .dark ? Color.black : Color.white)
-                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
-                        .cornerRadius(8)
                 }
-            }
-            .padding(.top, 8)
 
-            Spacer()
+            VStack(spacing: 16) {
+
+                Spacer()
+
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .frame(width: 60, height: 60)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+
+                Text("Thanks!")
+                    .font(.headline)
+
+                Text("We'll review your event and make it available shortly!")
+                    .multilineTextAlignment(.center)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+
+                Spacer()
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemBackground).ignoresSafeArea())
@@ -567,7 +568,7 @@ struct AddEventView: View {
     @State private var artistNames: [String] = [""]
     @State private var selectedArtists: [Artist?] = [nil]
     @State private var selectedArtistIndex: Int? = nil
-    @State private var showSuccess = true
+    @State private var showSuccess = false
 
     var body: some View {
             ScrollView {
@@ -584,7 +585,7 @@ struct AddEventView: View {
                             )
                             Spacer()
                         }
-                        TextField("Venue", text: $venueName)
+                        TextField("", text: $venueName)
                             .autocorrectionDisabled(true)
                             .disabled(true) // prevents keyboard from showing
                             .allowsHitTesting(true) // still lets user tap
@@ -627,7 +628,7 @@ struct AddEventView: View {
     
                             Spacer()
                         }
-                        TextField("Promoter", text: $promoterName)
+                        TextField("", text: $promoterName)
                             .autocorrectionDisabled(true)
                             .disabled(true) // prevents keyboard from showing
                             .allowsHitTesting(true) // still lets user tap
@@ -650,7 +651,7 @@ struct AddEventView: View {
                         }
                         HStack {
                             Text("$")
-                            TextField("Cover", text: $coverText)
+                            TextField("", text: $coverText)
                                 .keyboardType(.numberPad)
                                 .onChange(of: coverText) { newValue in
                                     coverText = String(newValue.prefix(3).filter { "0123456789".contains($0) })
@@ -669,7 +670,7 @@ struct AddEventView: View {
 
                         ForEach(artistNames.indices, id: \.self) { index in
                             HStack {
-                                TextField("Artist", text: $artistNames[index])
+                                TextField("", text: $artistNames[index])
                                     .autocorrectionDisabled(true)
                                     .disabled(true)  // prevents direct keyboard interaction
                                     .allowsHitTesting(true)  // tap events still come through
@@ -731,10 +732,10 @@ struct AddEventView: View {
                     
                     // Flyer Input
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Flyer Link")
+                        Text("Flyer Link (URL)")
                             .font(.headline)
 
-                        TextField("Paste URL here", text: $flyerLink)
+                        TextField("", text: $flyerLink)
                             .textContentType(.URL)
                             .autocorrectionDisabled(true)
                             .keyboardType(.URL)
@@ -751,21 +752,6 @@ struct AddEventView: View {
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                         }
-                        
-                        Button(action: {
-                            uploadFlyerImage()
-                        }) {
-                            HStack {
-                                Image(systemName: "arrow.up.doc.fill")
-                                    .background(colorScheme == .dark ? Color.black : Color.white)
-                                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
-                                    .font(.footnote)
-                                Text("Upload Flyer Image")
-                                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
-                                    .font(.footnote)
-                            }
-                        }
-                        .padding(.top, 4)
                     }
                     .padding(.horizontal)
 
@@ -805,7 +791,6 @@ struct AddEventView: View {
                         isVenueFocused = false
                     }
             }
-            // Full-screen auto-complete overlay for Promoter
             .fullScreenCover(isPresented: $showPromoterAutoComplete) {
                 PromoterAutoCompleteOverlay(text: $promoterName, selectedPromoter: $selectedPromoter, suggestions: promoterSuggestions, title: "Promoters")
                     .onAppear {
@@ -818,7 +803,6 @@ struct AddEventView: View {
                         }
                     }
             }
-            // Full-screen auto-complete overlay for Artists using selectedArtistIndex
             .fullScreenCover(isPresented: Binding<Bool>(
                 get: { selectedArtistIndex != nil },
                 set: { if !$0 { selectedArtistIndex = nil } }
@@ -843,11 +827,6 @@ struct AddEventView: View {
                     }
                 }
         }
-    }
-    
-    // Stub: Flyer image upload mechanism.
-    func uploadFlyerImage() {
-        print("Uploading flyer image...")
     }
     
     // Build tags from venue, promoter, and city.

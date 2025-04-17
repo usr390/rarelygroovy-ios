@@ -2,6 +2,7 @@ import SwiftUI
 import FontAwesome_swift
 
 struct ArtistDirectoryView: View {
+    
     @StateObject private var viewModel = ArtistsViewModel()
     
     // User’s typed text for name filtering
@@ -233,6 +234,23 @@ struct ArtistDirectoryView: View {
                                 .cornerRadius(16)
                             }
                             
+                            // Recently Added Chip
+                            Button(action: {
+                                isRecentlyAddedMode.toggle()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Recently Added")
+                                    Image(systemName: "clock")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(isRecentlyAddedMode ? Color.primary : Color.gray.opacity(0.3))
+                                .foregroundColor(isRecentlyAddedMode ? Color.black : .primary)
+                                .cornerRadius(16)
+                            }
+                            
                             // Timeline Chip
                             Button(action: {
                                 isTimelineMode.toggle()
@@ -264,23 +282,6 @@ struct ArtistDirectoryView: View {
                                 .padding(.vertical, 6)
                                 .background(isRecentlyTouredMode ? Color.primary : Color.gray.opacity(0.3))
                                 .foregroundColor(isRecentlyTouredMode ? Color.black : .primary)
-                                .cornerRadius(16)
-                            }
-                            
-                            // Recently Added Chip
-                            Button(action: {
-                                isRecentlyAddedMode.toggle()
-                            }) {
-                                HStack(spacing: 4) {
-                                    Text("Recently Added")
-                                    Image(systemName: "clock")
-                                        .imageScale(.medium)
-                                }
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(isRecentlyAddedMode ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(isRecentlyAddedMode ? Color.black : .primary)
                                 .cornerRadius(16)
                             }
                         }

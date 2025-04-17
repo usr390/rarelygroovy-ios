@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct rarelygroovyApp: App {
+    @StateObject var store: Store = Store()
     var body: some Scene {
         WindowGroup {
             MainTabView()  // replaces the default ContentView()
+                .environmentObject(store)
         }
     }
 }

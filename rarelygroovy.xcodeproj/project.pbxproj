@@ -17,6 +17,9 @@
 		B71DECA22D9F14B300B468FA /* AddEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71DECA12D9F14B300B468FA /* AddEventView.swift */; };
 		B7261FE42D8CC5DE00AD7DD0 /* iconTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */; };
 		B7261FE62D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf in Resources */ = {isa = PBXBuildFile; fileRef = B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */; };
+		B74DD89E2DAFF82900B09433 /* Rarelygroovy.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B74DD89D2DAFF82900B09433 /* Rarelygroovy.storekit */; };
+		B7918DDC2DAEF2A2009CAFF2 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7918DDB2DAEF2A2009CAFF2 /* StoreKit.framework */; };
+		B7918DDE2DAEF894009CAFF2 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7918DDD2DAEF894009CAFF2 /* Store.swift */; };
 		B7D498752D8A3482007DC1D7 /* rarelygroovyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */; };
 		B7D498772D8A3482007DC1D7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D498762D8A3482007DC1D7 /* ContentView.swift */; };
 		B7D498792D8A3484007DC1D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7D498782D8A3484007DC1D7 /* Assets.xcassets */; };
@@ -72,6 +75,10 @@
 		B7261FE32D8CC5DD00AD7DD0 /* iconTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconTest.swift; sourceTree = "<group>"; };
 		B7261FE52D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Font Awesome 5 Brands-Regular-400.otf"; path = "../../Downloads/fontawesome-free-5.15.4-desktop/otfs/Font Awesome 5 Brands-Regular-400.otf"; sourceTree = "<group>"; };
 		B7261FE72D8CCCC600AD7DD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B74DD89D2DAFF82900B09433 /* Rarelygroovy.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Rarelygroovy.storekit; sourceTree = "<group>"; };
+		B7918DDA2DAD6009009CAFF2 /* rarelygroovy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = rarelygroovy.entitlements; sourceTree = "<group>"; };
+		B7918DDB2DAEF2A2009CAFF2 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		B7918DDD2DAEF894009CAFF2 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		B7D498712D8A3481007DC1D7 /* rarelygroovy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rarelygroovy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7D498742D8A3482007DC1D7 /* rarelygroovyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rarelygroovyApp.swift; sourceTree = "<group>"; };
 		B7D498762D8A3482007DC1D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -110,6 +117,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6078A81FA3B2A7B7538BC537 /* Pods_rarelygroovy.framework in Frameworks */,
+				B7918DDC2DAEF2A2009CAFF2 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,6 +143,7 @@
 		58AFD35E68E1B909D19CFFE7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B7918DDB2DAEF2A2009CAFF2 /* StoreKit.framework */,
 				282C4786A73BB88BB6CB7208 /* Pods_rarelygroovy.framework */,
 				8C5EBA4BEB7AE8B2192171C9 /* Pods_rarelygroovy_rarelygroovyUITests.framework */,
 				5EDB97BA522C156B08BD705F /* Pods_rarelygroovyTests.framework */,
@@ -172,6 +181,7 @@
 		B7D498732D8A3481007DC1D7 /* rarelygroovy */ = {
 			isa = PBXGroup;
 			children = (
+				B7918DDA2DAD6009009CAFF2 /* rarelygroovy.entitlements */,
 				B7F7FF5A2D8DEB6500DB3098 /* Info.plist */,
 				B7D498A42D8B62ED007DC1D7 /* ArtistDirectoryView.swift */,
 				B7D498A22D8B62B7007DC1D7 /* ArtistDirectoryViewModel.swift */,
@@ -195,6 +205,8 @@
 				B71DEC9B2D9A03C200B468FA /* CustomTabBarController.swift */,
 				B71DEC9F2D9CA93900B468FA /* SignUpView.swift */,
 				B71DECA12D9F14B300B468FA /* AddEventView.swift */,
+				B7918DDD2DAEF894009CAFF2 /* Store.swift */,
+				B74DD89D2DAFF82900B09433 /* Rarelygroovy.storekit */,
 			);
 			path = rarelygroovy;
 			sourceTree = "<group>";
@@ -348,6 +360,7 @@
 			files = (
 				B7F7FF602D8DF49E00DB3098 /* Font Awesome 6 Free-Solid-900.otf in Resources */,
 				B7F7FF5F2D8DF49E00DB3098 /* Font Awesome 6 Free-Regular-400.otf in Resources */,
+				B74DD89E2DAFF82900B09433 /* Rarelygroovy.storekit in Resources */,
 				B7F7FF5C2D8DF46600DB3098 /* Font Awesome 6 Brands-Regular-400.otf in Resources */,
 				B7D4987C2D8A3484007DC1D7 /* Preview Assets.xcassets in Resources */,
 				B7261FE62D8CCA0000AD7DD0 /* Font Awesome 5 Brands-Regular-400.otf in Resources */,
@@ -479,6 +492,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7918DDE2DAEF894009CAFF2 /* Store.swift in Sources */,
 				B7261FE42D8CC5DE00AD7DD0 /* iconTest.swift in Sources */,
 				B7F7FF742D91256300DB3098 /* EventDetailView.swift in Sources */,
 				B7F7FF6C2D9120D300DB3098 /* Venue.swift in Sources */,
@@ -661,8 +675,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = rarelygroovy/rarelygroovy.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 89;
+				CURRENT_PROJECT_VERSION = 101;
 				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
 				DEVELOPMENT_TEAM = 9S77TZUXU6;
 				ENABLE_PREVIEWS = YES;
@@ -695,8 +710,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = rarelygroovy/rarelygroovy.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 89;
+				CURRENT_PROJECT_VERSION = 101;
 				DEVELOPMENT_ASSET_PATHS = "\"rarelygroovy/Preview Content\"";
 				DEVELOPMENT_TEAM = 9S77TZUXU6;
 				ENABLE_PREVIEWS = YES;

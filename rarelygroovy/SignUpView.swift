@@ -93,8 +93,8 @@ struct SignUpFormView: View {
                     .foregroundColor(.red)
             }
             Button(action: {
-                didAttemptSubmit = true // flag that submission was attempted
-                // Only attempt sign up if the form is valid
+                UIApplication.shared.hideKeyboard()
+                didAttemptSubmit = true
                 guard isFormValid else { return }
                 isLoading = true
                 Task {
@@ -151,7 +151,14 @@ extension AuthManager {
         let signUpResponse = try JSONDecoder().decode(AuthManager.LoginResponse.self, from: data)
         DispatchQueue.main.async {
             self.user = signUpResponse.user
+            print(self.user);
             NotificationCenter.default.post(name: Notification.Name("UserDidSignUp"), object: nil)
         }
+    }
+}
+
+extension UIApplication {
+    func hideKeyboard() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
