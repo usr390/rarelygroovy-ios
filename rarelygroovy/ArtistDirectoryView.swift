@@ -18,6 +18,7 @@ struct ArtistDirectoryView: View {
     @State private var randomArtist: Artist? = nil
     // Extra filter state for Recently Added
     @State private var isRecentlyAddedMode: Bool = false
+    @State private var activePlatformChip: String? = nil
     
     // Dictionary mapping top-level genres to subgenres
     let genreMapping: [String: [String]] = [
@@ -104,61 +105,114 @@ struct ArtistDirectoryView: View {
         return desiredOrder.filter { genreMapping.keys.contains($0) }
     }
     
-    // Final list of artists based on name and genre filters
+    let platformChips: [(key: String, label: String)] = [
+            ("spotify", "Spotify"),
+            ("apple", "Apple Music"),
+            ("bandcamp", "Bandcamp"),
+            ("soundcloud", "SoundCloud"),
+            ("mixcloud", "Mixcloud"),
+            ("youtube", "YouTube"),
+            ("twitch", "Twitch"),
+            ("instagram", "Instagram"),
+            ("facebook", "Facebook"),
+            ("tiktok", "TikTok"),
+            ("x", "X"),
+            ("threads", "Threads"),
+            ("tumblr", "Tumblr"),
+            ("self", "Website"),
+            ("lastfm", "Last.fm"),
+            ("discogs", "Discogs"),
+            ("deezer", "Deezer")
+        ]
+
     private var filteredArtists: [Artist] {
-        let nameFiltered: [Artist]
-        if searchText.isEmpty {
-            nameFiltered = viewModel.artists
+        viewModel.artists
+            .filter(matchesSearchText)
+            .filter(matchesGenreSelection)
+            .filter(matchesPlatformFilter)
+            .filter(matchesRecentlyTouredFilter)
+    }
+
+    private var sortedArtists: [Artist] {
+        if isTimelineMode {
+            return filteredArtists.sorted { ($0.start.prefix(4)) > ($1.start.prefix(4)) }
+        } else if isRecentlyAddedMode {
+            return filteredArtists.sorted { creationTimestamp(from: $0.id) > creationTimestamp(from: $1.id) }
         } else {
-            nameFiltered = viewModel.artists.filter { artist in
-                artist.name.lowercased().contains(searchText.lowercased())
-            }
-        }
-        
-        if selectedTopLevelGenres.isEmpty {
-            return nameFiltered
-        } else {
-            return nameFiltered.filter { artist in
-                let artistSubs = artist.genre.map { $0.lowercased() }
-                for top in selectedTopLevelGenres {
-                    if let subgenres = genreMapping[top] {
-                        if !Set(artistSubs).isDisjoint(with: Set(subgenres)) {
-                            return true
-                        }
-                    }
-                }
-                return false
-            }
+            return filteredArtists
         }
     }
-    
+
+    private var displayedArtists: [Artist] {
+        if isRandomArtistMode, let artist = randomArtist {
+            return [artist]
+        } else {
+            return sortedArtists
+        }
+    }
+
+    private func matchesSearchText(_ artist: Artist) -> Bool {
+        searchText.isEmpty || artist.name.lowercased().contains(searchText.lowercased())
+    }
+
+    private func matchesGenreSelection(_ artist: Artist) -> Bool {
+        guard !selectedTopLevelGenres.isEmpty else { return true }
+        let artistSubs = artist.genre.map { $0.lowercased() }
+        return selectedTopLevelGenres.contains {
+            guard let subgenres = genreMapping[$0] else { return false }
+            return !Set(artistSubs).isDisjoint(with: subgenres)
+        }
+    }
+
+    private func matchesPlatformFilter(_ artist: Artist) -> Bool {
+        guard let platform = activePlatformChip else { return true }
+        guard let link = artist.links?[platform] else { return false } // must exist
+        return link.lowercased() != "pending"                          // and not be pending
+    }
+
+    private func matchesRecentlyTouredFilter(_ artist: Artist) -> Bool {
+        !isRecentlyTouredMode || artist.location.lowercased() != "rgv"
+    }
     // Final list after applying extra filters
     private var finalArtists: [Artist] {
         var artists = filteredArtists
+
         if isRecentlyTouredMode {
-            // Exclude local artists (assuming local == "rgv")
             artists = artists.filter { $0.location.lowercased() != "rgv" }
         }
+
         if isTimelineMode {
-            // Sort by start year (convert first 4 characters to Int)
             artists = artists.sorted {
                 let year1 = Int($0.start.prefix(4)) ?? 0
                 let year2 = Int($1.start.prefix(4)) ?? 0
                 return year1 > year2
             }
         }
+
         if isRandomArtistMode, let artist = randomArtist {
             return [artist]
         }
+
         if isRecentlyAddedMode {
-            // Sort descending by creation timestamp from the artist ID
             artists = artists.sorted {
                 creationTimestamp(from: $0.id) > creationTimestamp(from: $1.id)
             }
         }
+        
+        // 🔍 Platform-specific filter
+        if let platform = activePlatformChip {
+            artists = artists.filter { artist in
+                if let links = artist.links,
+                   let link = links[platform],
+                   link.lowercased() != "pending" {
+                    return true
+                }
+                return false
+            }
+        }
+
         return artists
     }
-    
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -168,7 +222,13 @@ struct ArtistDirectoryView: View {
                     // 1) Free-text search field with clear button
                     ZStack(alignment: .trailing) {
                         TextField("Search artists...", text: $searchText)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(10)
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                            )
                         if !searchText.isEmpty {
                             Button {
                                 searchText = ""
@@ -215,11 +275,7 @@ struct ArtistDirectoryView: View {
                             // Random Artist Chip
                             Button(action: {
                                 isRandomArtistMode.toggle()
-                                if isRandomArtistMode {
-                                    randomArtist = filteredArtists.randomElement()
-                                } else {
-                                    randomArtist = nil
-                                }
+                                randomArtist = isRandomArtistMode ? sortedArtists.randomElement() : nil
                             }) {
                                 HStack(spacing: 4) {
                                     Text("Random Artist")
@@ -288,6 +344,30 @@ struct ArtistDirectoryView: View {
                         .padding(.horizontal, 8)  // Ensure explicit 8pt padding on left and right
                     }
                     .padding(.bottom, 8)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(platformChips, id: \.key) { platform in
+                                Button(action: {
+                                    // toggle logic
+                                    activePlatformChip = (activePlatformChip == platform.key) ? nil : platform.key
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Text(platform.label)
+                                    }
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(activePlatformChip == platform.key ? Color.primary : Color.gray.opacity(0.3))
+                                    .foregroundColor(activePlatformChip == platform.key ? Color.black : .primary)
+                                    .cornerRadius(16)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 8)
+                    }
+                    .padding(.bottom, 8)
+                    
                     LazyVStack(alignment: .center, spacing: 0) {
                         if finalArtists.isEmpty && !viewModel.isLoading {
                             Text("No artists match search criteria.")
@@ -311,7 +391,7 @@ struct ArtistDirectoryView: View {
                                     // Artist name with location (if not "rgv")
                                     let nameText = Text(artist.name)
                                     let locationText = artist.location.uppercased() != "RGV"
-                                        ? Text(",\(artist.location)")
+                                    ? Text(",\(artist.location.uppercased())")
                                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                                             .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
                                         : Text("")
@@ -396,36 +476,60 @@ struct ArtistDirectoryView: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 4)
+                                    
                                     // Valid links
-                                    if let links = artist.links {
-                                        let validLinks = links.filter {
-                                            if let url = URL(string: $0.value),
-                                               let scheme = url.scheme,
-                                               ["http", "https"].contains(scheme) {
-                                                return true
+                                    let validLinks = (artist.links ?? [:]).filter {
+                                        if let url = URL(string: $0.value),
+                                           let scheme = url.scheme,
+                                           ["http", "https"].contains(scheme) {
+                                            return true
+                                        }
+                                        return false
+                                    }
+
+                                    let customSortedLinks = validLinks.sorted { a, b in
+                                        rank(for: a.key) < rank(for: b.key)
+                                    }
+
+                                    let threshold = 6
+                                    let firstRow = Array(customSortedLinks.prefix(threshold))
+                                    let secondRow = Array(customSortedLinks.dropFirst(threshold))
+
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack(spacing: 16) {
+                                            ForEach(firstRow, id: \.key) { key, value in
+                                                if let url = URL(string: value) {
+                                                    let icon = fontAwesomeIcon(for: key)
+                                                    Link(destination: url) {
+                                                        Text(String.fontAwesomeIcon(name: icon))
+                                                            .font(.custom(fontName(for: icon), size: 24))
+                                                            .foregroundColor(.secondary)
+                                                            .frame(width: 35, height: 40)
+                                                    }
+                                                }
                                             }
-                                            return false
                                         }
-                                        let customSortedLinks = validLinks.sorted { a, b in
-                                            rank(for: a.key) < rank(for: b.key)
-                                        }
-                                        if !validLinks.isEmpty {
+                                        .frame(maxWidth: .infinity, alignment: .center)
+
+
+                                        if !secondRow.isEmpty {
                                             HStack(spacing: 16) {
-                                                ForEach(customSortedLinks, id: \.key) { key, value in
+                                                ForEach(secondRow, id: \.key) { key, value in
                                                     if let url = URL(string: value) {
                                                         let icon = fontAwesomeIcon(for: key)
                                                         Link(destination: url) {
                                                             Text(String.fontAwesomeIcon(name: icon))
                                                                 .font(.custom(fontName(for: icon), size: 24))
                                                                 .foregroundColor(.secondary)
+                                                                .frame(width: 35, height: 40)
                                                         }
-                                                        .frame(width: 35, height: 40)
                                                     }
                                                 }
                                             }
-                                            .padding(.top, 4)
+                                            .frame(maxWidth: .infinity, alignment: .center)
                                         }
                                     }
+                                    .padding(.top, 4)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .padding(.vertical, 16)
@@ -487,7 +591,11 @@ func fontAwesomeIcon(for key: String) -> FontAwesome {
     } else if lowerKey.contains("facebook") {
         return .facebook
     } else if lowerKey.contains("mixcloud") {
-        return .mixcloud
+        if let mixcloudIcon = FontAwesome(rawValue: "mixcloud") {
+            return mixcloudIcon
+        } else {
+            return .mixcloud
+        }
     } else if lowerKey.contains("self") {
         return .globe
     } else if lowerKey.contains("x") {

@@ -15,8 +15,14 @@ struct EventsView: View {
                 ScrollView {
                     // Search input field
                     ZStack(alignment: .trailing) {
-                        TextField("Search events…", text: $searchQuery)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        TextField("Search events...", text: $searchQuery)
+                            .padding(10)
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                            )
                         if !searchQuery.isEmpty {
                             Button {
                                 searchQuery = ""
@@ -177,7 +183,7 @@ struct EventsView: View {
                                                     var t = Text(artist.name)
 
                                                     if artist.location != "RGV" {
-                                                        t = t + Text(",\(artist.location)")
+                                                        t = t + Text(",\(artist.location.uppercased())")
                                                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                                                             .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
                                                     }
@@ -304,24 +310,22 @@ struct EventsView: View {
                                                 }
                                             }
                                             .frame(maxWidth: .infinity, alignment: .center)
-                                            .onTapGesture {
-                                                if let venue = event.venue,
-                                                   let city = venue.city,
-                                                   let address = venue.address {
-                                                    openInMaps(address: address, city: city)
-                                                }
-                                            }
                                             
                                             // Address
                                             if let venue = event.venue,
                                                let city = venue.city,
                                                let address = venue.address {
-                                                Text("\(address), \(city)")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.bottom, 50)
+                                                Button(action: {
+                                                    openInMaps(address: address, city: city)
+                                                }) {
+                                                    Text("\(address), \(city)")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary) // make it look tappable
+                                                        .multilineTextAlignment(.center)
+                                                        .padding(.bottom, 50)
+                                                }
                                             }
+                                            
                                             
                                             Divider()
                                         }

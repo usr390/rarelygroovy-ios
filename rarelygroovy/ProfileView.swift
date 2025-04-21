@@ -3,14 +3,15 @@ import StoreKit
 
 struct ProfileView: View {
     @EnvironmentObject var store: Store
-
+    
     @ObservedObject var authManager = AuthManager.shared
     @State private var showUpgradeDrawer = false
     @Environment(\.colorScheme) var colorScheme
-
+    @State private var showDeleteConfirmation = false
+    
     var body: some View {
         VStack(spacing: 24) {
-
+            
             // Toolbar
             HStack {
                 Spacer()
@@ -19,6 +20,10 @@ struct ProfileView: View {
                         authManager.user = nil
                         NotificationCenter.default.post(name: Notification.Name("UserDidLogout"), object: nil)
                     }
+                    
+                    Button("Delete account", role: .destructive) {
+                        showDeleteConfirmation = true
+                    }
                 } label: {
                     Image(systemName: "gearshape.fill")
                         .resizable()
@@ -26,20 +31,28 @@ struct ProfileView: View {
                         .frame(width: 24, height: 24)
                         .padding()
                 }
+                .alert("Are you sure you want to delete your account?", isPresented: $showDeleteConfirmation) {
+                    Button("Delete", role: .destructive) {
+                        Task {
+                            await deleteAccount()
+                        }
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
             }
-
+            
             // Profile
             VStack(spacing: 8) {
                 let userId = AuthManager.shared.user?.id ?? "fallback"
                 AbstractAvatar(id: userId)
-
+                
                 if let user = authManager.user {
                     Text(user.username)
                         .font(.title)
                         .fontWeight(.bold)
                 }
             }
-
+            
             // Stats
             HStack(spacing: 12) {
                 StatCard(title: "Events", count: 12)
@@ -47,7 +60,7 @@ struct ProfileView: View {
                 StatCard(title: "Bookmarks", count: 3)
             }
             .padding(.horizontal)
-
+            
             // Premium Section
             if let user = authManager.user {
                 VStack(alignment: .leading, spacing: 12) {
@@ -56,7 +69,7 @@ struct ProfileView: View {
                             Text("Your Rarelygroovy+")
                                 .font(.title2)
                                 .fontWeight(.semibold)
-
+                            
                             VStack(alignment: .leading, spacing: 6) {
                                 Label("Access full artist history", systemImage: "music.note.list")
                                 Label("See exclusive events", systemImage: "calendar")
@@ -70,11 +83,11 @@ struct ProfileView: View {
                         Text("Rarelygroovy+")
                             .font(.title2)
                             .fontWeight(.semibold)
-
+                        
                         Text("Unlock our full event list and artist directory.")
                             .font(.body)
                             .foregroundColor(.secondary)
-
+                        
                         Button(action: {
                             showUpgradeDrawer = true
                         }) {
@@ -99,6 +112,35 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showUpgradeDrawer) {
             UpgradeDrawerOverlay(showDrawer: $showUpgradeDrawer, product: store.products.first!, purchasingEnabled: true)
+        }
+    }
+    
+    func deleteAccount() async {
+        guard let userId = authManager.user?.id else { return }
+        
+        guard let url = URL(string: "https://enm-project-production.up.railway.app/api/delete-user/\(userId)") else {
+            print("❌ Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                print("✅ Account deleted")
+                DispatchQueue.main.async {
+                    authManager.user = nil
+                    NotificationCenter.default.post(name: Notification.Name("UserDidLogout"), object: nil)
+                }
+            } else {
+                let message = String(data: data, encoding: .utf8) ?? "(no response)"
+                print("❌ Failed to delete account")
+            }
+        } catch {
+            print("❌ Error deleting account: \(error)")
         }
     }
 }

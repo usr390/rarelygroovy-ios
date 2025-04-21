@@ -283,37 +283,59 @@ struct EventDetailView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 4)
 
-                                // Valid links for this artist
-                                if let links = artist.links {
-                                    let validLinks = links.filter { entry in
-                                        if let url = URL(string: entry.value),
-                                           let scheme = url.scheme,
-                                           ["http", "https"].contains(scheme) {
-                                            return true
+                                // Valid links
+                                let validLinks = (artist.links ?? [:]).filter {
+                                    if let url = URL(string: $0.value),
+                                       let scheme = url.scheme,
+                                       ["http", "https"].contains(scheme) {
+                                        return true
+                                    }
+                                    return false
+                                }
+
+                                let customSortedLinks = validLinks.sorted { a, b in
+                                    rank(for: a.key) < rank(for: b.key)
+                                }
+
+                                let threshold = 6
+                                let firstRow = Array(customSortedLinks.prefix(threshold))
+                                let secondRow = Array(customSortedLinks.dropFirst(threshold))
+
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack(spacing: 16) {
+                                        ForEach(firstRow, id: \.key) { key, value in
+                                            if let url = URL(string: value) {
+                                                let icon = fontAwesomeIcon(for: key)
+                                                Link(destination: url) {
+                                                    Text(String.fontAwesomeIcon(name: icon))
+                                                        .font(.custom(fontName(for: icon), size: 24))
+                                                        .foregroundColor(.secondary)
+                                                        .frame(width: 35, height: 40)
+                                                }
+                                            }
                                         }
-                                        return false
                                     }
-                                    let sortedLinks = validLinks.sorted { a, b in
-                                        rank(for: a.key) < rank(for: b.key)
-                                    }
-                                    
-                                    if !sortedLinks.isEmpty {
+                                    .frame(maxWidth: .infinity, alignment: .center)
+
+
+                                    if !secondRow.isEmpty {
                                         HStack(spacing: 16) {
-                                            ForEach(sortedLinks, id: \.key) { key, value in
+                                            ForEach(secondRow, id: \.key) { key, value in
                                                 if let url = URL(string: value) {
                                                     let icon = fontAwesomeIcon(for: key)
                                                     Link(destination: url) {
                                                         Text(String.fontAwesomeIcon(name: icon))
                                                             .font(.custom(fontName(for: icon), size: 24))
-                                                            .foregroundColor(.gray)
+                                                            .foregroundColor(.secondary)
+                                                            .frame(width: 35, height: 40)
                                                     }
-                                                    .frame(width: 35, height: 40)
                                                 }
                                             }
                                         }
                                         .frame(maxWidth: .infinity, alignment: .center)
                                     }
                                 }
+                                .padding(.top, 4)
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 16)
@@ -348,6 +370,32 @@ struct EventDetailView: View {
                     }
                     .padding(.horizontal)
                 }
+                
+                if let venue = event.venue, venue.link != "pending" {
+                    Text("Venue")
+                        .font(.title)
+                        .padding(.top, 50)
+                        .foregroundColor(.gray)
+                    VStack(alignment: .center, spacing: 8) {
+                        // Promoter name
+                        Text(venue.name ?? "Unknown")
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        
+                        // Promoter link: check that it exists and is not empty
+                        if let link = venue.link, !link.isEmpty, let url = URL(string: link) {
+                            let icon = fontAwesomeIcon(for: "instagram")
+                            Link(destination: url) {
+                                Text(String.fontAwesomeIcon(name: icon))
+                                    .font(.custom(fontName(for: icon), size: 24))
+                                    .foregroundColor(.gray)
+                            }
+                            .frame(width: 35, height: 40)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+
                 
                 Spacer()
             }

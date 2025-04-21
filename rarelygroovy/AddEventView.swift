@@ -405,7 +405,7 @@ struct ArtistAutoCompleteOverlay: View {
                         HStack {
                             if !artist.location.isEmpty && artist.location.lowercased() != "rgv" {
                                 (Text(artist.name)
-                                    + Text(",\(artist.location)")
+                                 + Text(",\(artist.location.uppercased())")
                                     .font(.system(size: 12, weight: .bold, design: .monospaced))
                                     .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86)))
                             } else {
@@ -431,68 +431,7 @@ struct ArtistAutoCompleteOverlay: View {
         }
     }
 }
-struct PasteTextField: UIViewRepresentable {
-    @Binding var text: String
-    var placeholder: String
-
-    func makeUIView(context: Context) -> UITextField {
-        // Use CustomTextField instead of plain UITextField
-        let textField = CustomTextField()
-        textField.placeholder = placeholder
-        textField.textContentType = .URL  // This hints for URL/paste support
-        textField.autocorrectionType = .no
-        textField.delegate = context.coordinator
-        textField.addTarget(context.coordinator,
-                            action: #selector(Coordinator.textDidChange(_:)),
-                            for: .editingChanged)
-        
-        // the key part:
-        textField.adjustsFontSizeToFitWidth = false
-        textField.minimumFontSize = 12
-
-        
-        return textField
-    }
-    
-    func updateUIView(_ uiView: UITextField, context: Context) {
-        uiView.text = text
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, UITextFieldDelegate {
-        var parent: PasteTextField
-        
-        init(_ parent: PasteTextField) {
-            self.parent = parent
-        }
-        
-        @objc func textDidChange(_ textField: UITextField) {
-            parent.text = textField.text ?? ""
-        }
-        
-        func textFieldDidBeginEditing(_ textField: UITextField) {
-            // Delay slightly before showing the menu so that the text field is fully active
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                let menu = UIMenuController.shared
-                // Set the target rectangle to the entire bounds of the text field.
-                menu.setTargetRect(textField.bounds, in: textField)
-                menu.setMenuVisible(true, animated: true)
-            }
-        }
-    }
-}
 // Custom UITextField subclass that always enables paste.
-class CustomTextField: UITextField {
-    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        if action == #selector(paste(_:)) {
-            return true
-        }
-        return super.canPerformAction(action, withSender: sender)
-    }
-}
 struct SuccessOverlay: View {
     var doneAction: () -> Void
     var addAnotherAction: () -> Void
@@ -546,7 +485,6 @@ struct AddEventView: View {
     @State private var showTime: Date? = nil
     @State private var coverText: String = ""
     @State private var flyerLink: String = ""
-    @State private var flyerImage: UIImage? = nil  // Stub for image upload
     @State private var errorMessage: String? = nil
     @Environment(\.colorScheme) var colorScheme
     @ObservedObject var authManager = AuthManager.shared
