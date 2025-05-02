@@ -229,6 +229,7 @@ struct VenueAutoCompleteOverlay: View {
     let suggestions: [Venue]  // array of Venue objects
     let title: String
     @Environment(\.dismiss) var dismiss
+    @State private var isLoading: Bool = true
 
     var filteredSuggestions: [Venue] {
         if text.isEmpty {
@@ -245,6 +246,7 @@ struct VenueAutoCompleteOverlay: View {
                     TextField("Search...", text: $text)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
+                        .autocorrectionDisabled(true)
                     if !text.isEmpty {
                         Button {
                             text = ""
@@ -253,6 +255,18 @@ struct VenueAutoCompleteOverlay: View {
                                 .foregroundColor(.gray)
                                 .padding(.trailing, 8)
                         }
+                    }
+                }
+                if filteredSuggestions.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No venues matched your search.")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("If this is a new venue or one we haven't added yet, feel free to type in its name exactly as you'd like it to appear. We'll review it and add any necessary information.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
                 }
                 List(filteredSuggestions) { venue in
@@ -330,6 +344,18 @@ struct PromoterAutoCompleteOverlay: View {
                         }
                     }
                 }
+                if filteredSuggestions.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No promoters matched your search.")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("If this is a new promoter or one we haven't added yet, feel free to type in their name exactly as you'd like it to appear. We'll review them and add any necessary information.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                }
                 List(filteredSuggestions) { promoter in
                     Button(action: {
                         text = promoter.name ?? ""
@@ -394,6 +420,18 @@ struct ArtistAutoCompleteOverlay: View {
                                 .foregroundColor(.gray)
                                 .padding(.trailing, 8)
                         }
+                    }
+                }
+                if filteredSuggestions.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No artists matched your search.")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("If this is a new artist or one we haven't added yet, feel free to type in their name exactly as you'd like it to appear. We'll review them and add any necessary information.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
                 }
                 List(filteredSuggestions) { artist in
@@ -528,11 +566,10 @@ struct AddEventView: View {
                             .disabled(true) // prevents keyboard from showing
                             .allowsHitTesting(true) // still lets user tap
                             .focused($isVenueFocused)
-                            .onChange(of: isVenueFocused) { focused in
-                                if focused {
+                            .onChange(of: isVenueFocused) {
+                                if isVenueFocused {
                                     fetchVenues()
                                 } else {
-                                    // Optionally clear suggestions when focus is lost
                                     // venueSuggestions = []
                                 }
                             }
@@ -591,8 +628,8 @@ struct AddEventView: View {
                             Text("$")
                             TextField("", text: $coverText)
                                 .keyboardType(.numberPad)
-                                .onChange(of: coverText) { newValue in
-                                    coverText = String(newValue.prefix(3).filter { "0123456789".contains($0) })
+                                .onChange(of: coverText) {
+                                    coverText = String(coverText.prefix(3).filter { "0123456789".contains($0) })
                                 }
                         }
                         .padding()
@@ -839,7 +876,7 @@ struct AddEventView: View {
         // Venue
         if let venue = selectedVenue {
             if let data = try? JSONEncoder().encode(venue),
-               var venueDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+               let venueDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 eventData["venue"] = unwrapID(from: venueDict)
             } else {
                 eventData["venue"] = ["name": venueName]
@@ -851,7 +888,7 @@ struct AddEventView: View {
         // Promoter
         if let promoter = selectedPromoter {
             if let data = try? JSONEncoder().encode(promoter),
-               var promoterDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+               let promoterDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 eventData["promoter"] = unwrapID(from: promoterDict)
             } else {
                 eventData["promoter"] = ["name": promoterName]
@@ -921,7 +958,7 @@ struct AddEventView: View {
             // Use the corresponding selected artist if available.
             if let selectedArtist = selectedArtists[index] {
                 if let data = try? JSONEncoder().encode(selectedArtist),
-                   var artistDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                   let artistDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     return unwrapID(from: artistDict)
                 }
             }

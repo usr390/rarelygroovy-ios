@@ -19,6 +19,8 @@ struct ArtistDirectoryView: View {
     // Extra filter state for Recently Added
     @State private var isRecentlyAddedMode: Bool = false
     @State private var activePlatformChip: String? = nil
+    @Environment(\.colorScheme) var colorScheme
+
     
     // Dictionary mapping top-level genres to subgenres
     let genreMapping: [String: [String]] = [
@@ -171,8 +173,13 @@ struct ArtistDirectoryView: View {
     }
 
     private func matchesRecentlyTouredFilter(_ artist: Artist) -> Bool {
-        !isRecentlyTouredMode || artist.location.lowercased() != "rgv"
+        if isRecentlyTouredMode {
+            return artist.location.lowercased() != "rgv" // non-RGV only
+        } else {
+            return artist.location.lowercased() == "rgv" // RGV only
+        }
     }
+    
     // Final list after applying extra filters
     private var finalArtists: [Artist] {
         var artists = filteredArtists
@@ -184,8 +191,20 @@ struct ArtistDirectoryView: View {
         if isTimelineMode {
             artists = artists.sorted {
                 let year1 = Int($0.start.prefix(4)) ?? 0
+                let month1 = Int($0.start.dropFirst(5).prefix(2)) ?? 0
+                let day1 = Int($0.start.dropFirst(8).prefix(2)) ?? 0
+                
                 let year2 = Int($1.start.prefix(4)) ?? 0
-                return year1 > year2
+                let month2 = Int($1.start.dropFirst(5).prefix(2)) ?? 0
+                let day2 = Int($1.start.dropFirst(8).prefix(2)) ?? 0
+                
+                if year1 != year2 {
+                    return year1 > year2
+                } else if month1 != month2 {
+                    return month1 > month2
+                } else {
+                    return day1 > day2
+                }
             }
         }
 
@@ -213,6 +232,23 @@ struct ArtistDirectoryView: View {
 
         return artists
     }
+    
+    func chipBackground(isSelected: Bool) -> Color {
+        if isSelected {
+            return colorScheme == .dark ? Color.white : Color.primary
+        } else {
+            return colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3)
+        }
+    }
+
+    func chipForeground(isSelected: Bool) -> Color {
+        if isSelected {
+            return colorScheme == .dark ? Color.black : Color.white
+        } else {
+            return colorScheme == .dark ? Color.white : Color.primary
+        }
+    }
+    
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -241,11 +277,9 @@ struct ArtistDirectoryView: View {
                     }
                     .padding([.horizontal, .top])
                     
-                    // 2b) Horizontal chips for top-level genres
-                    // Horizontal chips for top-level genres with Clear All chip as left-most chip
+                    // Genre chips
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            // Genre chips
                             ForEach(topLevelGenres, id: \.self) { topLevel in
                                 let isSelected = selectedTopLevelGenres.contains(topLevel)
                                 Button {
@@ -259,8 +293,8 @@ struct ArtistDirectoryView: View {
                                         .font(.subheadline)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 6)
-                                        .background(isSelected ? Color.primary : Color.gray.opacity(0.3))
-                                        .foregroundColor(isSelected ? Color.black : .primary)
+                                        .background(chipBackground(isSelected: isSelected))
+                                        .foregroundColor(chipForeground(isSelected: isSelected))
                                         .cornerRadius(16)
                                 }
                             }
@@ -268,8 +302,32 @@ struct ArtistDirectoryView: View {
                         .padding(.horizontal, 8)
                     }
                     .padding(.vertical, 8)
-                    
-                    // 2c) Horizontal scroll view for extra filter chips (Random Artist, Timeline, Recently Toured)
+
+                    // Social media / streaming platform chips
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(platformChips, id: \.key) { platform in
+                                let isSelected = activePlatformChip == platform.key
+                                Button(action: {
+                                    activePlatformChip = isSelected ? nil : platform.key
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Text(platform.label)
+                                    }
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(chipBackground(isSelected: isSelected))
+                                    .foregroundColor(chipForeground(isSelected: isSelected))
+                                    .cornerRadius(16)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 8)
+                    }
+                    .padding(.bottom, 8)
+
+                    // Horizontal scroll view for extra filter chips (Random Artist, Timeline, Recently Toured)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             // Random Artist Chip
@@ -285,8 +343,8 @@ struct ArtistDirectoryView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(isRandomArtistMode ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(isRandomArtistMode ? Color.black : .primary)
+                                .background(chipBackground(isSelected: isRandomArtistMode))
+                                .foregroundColor(chipForeground(isSelected: isRandomArtistMode))
                                 .cornerRadius(16)
                             }
                             
@@ -302,8 +360,8 @@ struct ArtistDirectoryView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(isRecentlyAddedMode ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(isRecentlyAddedMode ? Color.black : .primary)
+                                .background(chipBackground(isSelected: isRecentlyAddedMode))
+                                .foregroundColor(chipForeground(isSelected: isRecentlyAddedMode))
                                 .cornerRadius(16)
                             }
                             
@@ -319,8 +377,8 @@ struct ArtistDirectoryView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(isTimelineMode ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(isTimelineMode ? Color.black : .primary)
+                                .background(chipBackground(isSelected: isTimelineMode))
+                                .foregroundColor(chipForeground(isSelected: isTimelineMode))
                                 .cornerRadius(16)
                             }
                             
@@ -336,45 +394,55 @@ struct ArtistDirectoryView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(isRecentlyTouredMode ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(isRecentlyTouredMode ? Color.black : .primary)
+                                .background(chipBackground(isSelected: isRecentlyTouredMode))
+                                .foregroundColor(chipForeground(isSelected: isRecentlyTouredMode))
                                 .cornerRadius(16)
                             }
                         }
-                        .padding(.horizontal, 8)  // Ensure explicit 8pt padding on left and right
+                        .padding(.horizontal, 8) // Explicit 8pt padding left/right
                     }
                     .padding(.bottom, 8)
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(platformChips, id: \.key) { platform in
-                                Button(action: {
-                                    // toggle logic
-                                    activePlatformChip = (activePlatformChip == platform.key) ? nil : platform.key
-                                }) {
-                                    HStack(spacing: 4) {
-                                        Text(platform.label)
-                                    }
-                                    .font(.subheadline)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(activePlatformChip == platform.key ? Color.primary : Color.gray.opacity(0.3))
-                                    .foregroundColor(activePlatformChip == platform.key ? Color.black : .primary)
-                                    .cornerRadius(16)
-                                }
-                            }
+                    if viewModel.isLoading {
+                        HStack {
+                            Spacer()
+                            ProgressView("Loading Artists...")
+                                .progressViewStyle(CircularProgressViewStyle())
+                            Spacer()
                         }
-                        .padding(.horizontal, 8)
+                        .padding(.vertical, 40)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(UIColor.systemBackground).opacity(0.8))
+
                     }
-                    .padding(.bottom, 8)
                     
                     LazyVStack(alignment: .center, spacing: 0) {
                         if finalArtists.isEmpty && !viewModel.isLoading {
-                            Text("No artists match search criteria.")
+                            VStack(spacing: 12) {
+                                Divider()
+                                
+                                Text("No artists match search criteria.")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.vertical, 8)
+                                
+                                Divider()
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("* Start and end years are best estimates")
+                                    if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
+                                        Text("* See Rarelygroovy+ for our full directory")
+                                    }
+                                }
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
-                                .padding(.top, 40)
-                        } else {
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 8)
+                            }
+                            .padding(.horizontal)
+                        }
+                    else {
                             ForEach(finalArtists) { artist in
                                 VStack(alignment: .center, spacing: 8) {
                                     // Only show creation date when Recently Added filter is active
@@ -536,13 +604,17 @@ struct ArtistDirectoryView: View {
                                 
                                 Divider()
                             }
-                            // Disclaimer at the bottom
                             if !viewModel.isLoading && !viewModel.artists.isEmpty {
-                                Text("* Start and end years are best estimates")
-                                    .font(.footnote)
-                                    .foregroundColor(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding()
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("* Start and end years are best estimates")
+                                    if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
+                                        Text("* See Rarelygroovy+ for our full directory")
+                                    }
+                                }
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
                             }
                         }
                     }
@@ -551,15 +623,8 @@ struct ArtistDirectoryView: View {
                 .refreshable {
                     viewModel.fetchArtists(userInitiated: true)
                 }
-                
-                if viewModel.isLoading {
-                    VStack {
-                        ProgressView("Loading Artists...")
-                            .progressViewStyle(CircularProgressViewStyle())
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .offset(y: -200)
-                    .background(Color(UIColor.systemBackground).opacity(0.8))
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("UserDidPlusify"))) { _ in
+                    viewModel.fetchArtists(userInitiated: false)
                 }
             }
         }

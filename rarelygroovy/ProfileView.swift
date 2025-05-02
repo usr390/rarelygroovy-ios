@@ -3,12 +3,18 @@ import StoreKit
 
 struct ProfileView: View {
     @EnvironmentObject var store: Store
-    
     @ObservedObject var authManager = AuthManager.shared
-    @State private var showUpgradeDrawer = false
     @Environment(\.colorScheme) var colorScheme
-    @State private var showDeleteConfirmation = false
     
+    @State private var showUpgradeDrawer = false
+    @State private var showDeleteConfirmation = false
+    @State private var showRestoreDialog = false
+    @State private var restoreResultMessage: String? = nil
+    @State private var showRestoreResultAlert = false
+    @State private var showEmailErrorAlert = false
+    @State private var emailErrorMessage = ""
+    @State private var restoreWasSuccessful = false
+
     var body: some View {
         VStack(spacing: 24) {
             
@@ -16,6 +22,12 @@ struct ProfileView: View {
             HStack {
                 Spacer()
                 Menu {
+                    Button("Restore purchases") {
+                        Task {
+                            await runRestore()
+                        }
+                    }
+                    
                     Button("Log out", role: .destructive) {
                         authManager.user = nil
                         NotificationCenter.default.post(name: Notification.Name("UserDidLogout"), object: nil)
@@ -39,8 +51,24 @@ struct ProfileView: View {
                     }
                     Button("Cancel", role: .cancel) { }
                 }
+                .alert("Restore Result", isPresented: $showRestoreResultAlert) {
+                    Button("OK", role: .cancel) { }
+
+                    if !restoreWasSuccessful {
+                        Button("Contact Us") {
+                            openSupportEmail()
+                        }
+                    }
+                } message: {
+                    Text(restoreResultMessage ?? "")
+                }
+                .alert("Email Error", isPresented: $showEmailErrorAlert) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(emailErrorMessage)
+                }
             }
-            
+
             // Profile
             VStack(spacing: 8) {
                 let userId = AuthManager.shared.user?.id ?? "fallback"
@@ -52,15 +80,7 @@ struct ProfileView: View {
                         .fontWeight(.bold)
                 }
             }
-            
-            // Stats
-            HStack(spacing: 12) {
-                StatCard(title: "Events", count: 12)
-                StatCard(title: "Artists", count: 5)
-                StatCard(title: "Bookmarks", count: 3)
-            }
-            .padding(.horizontal)
-            
+
             // Premium Section
             if let user = authManager.user {
                 VStack(alignment: .leading, spacing: 12) {
@@ -69,25 +89,24 @@ struct ProfileView: View {
                             Text("Your Rarelygroovy+")
                                 .font(.title2)
                                 .fontWeight(.semibold)
-                            
+
                             VStack(alignment: .leading, spacing: 6) {
-                                Label("Access full artist history", systemImage: "music.note.list")
-                                Label("See exclusive events", systemImage: "calendar")
-                                Label("Support the local scene", systemImage: "heart.fill")
+                                Label("Access to full artist history", systemImage: "music.note.list")
+                                Label("Access to full event list", systemImage: "calendar")
                             }
                             .font(.body)
                             .foregroundColor(.secondary)
                         }
-                        .padding(.horizontal, 8) // tighter side padding *just for this block*
+                        .padding(.horizontal, 8)
                     } else {
                         Text("Rarelygroovy+")
                             .font(.title2)
                             .fontWeight(.semibold)
-                        
+
                         Text("Unlock our full event list and artist directory.")
                             .font(.body)
                             .foregroundColor(.secondary)
-                        
+
                         Button(action: {
                             showUpgradeDrawer = true
                         }) {
@@ -101,34 +120,68 @@ struct ProfileView: View {
                     }
                 }
                 .padding(.vertical, 12)
-                .padding(.horizontal, 16) // tighter left/right
+                .padding(.horizontal, 16)
                 .frame(maxWidth: .infinity)
                 .background(Color(UIColor.secondarySystemBackground))
                 .cornerRadius(16)
                 .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 4)
-                .padding(.horizontal) // keeps outer spacing consistent with other sections
+                .padding(.horizontal)
             }
+
             Spacer()
         }
         .sheet(isPresented: $showUpgradeDrawer) {
             UpgradeDrawerOverlay(showDrawer: $showUpgradeDrawer, product: store.products.first!, purchasingEnabled: true)
         }
     }
-    
+
+    func runRestore() async {
+        var restored = false
+
+        for await result in Transaction.currentEntitlements {
+            if case .verified(let transaction) = result,
+               transaction.productID == "rarelygroovyplus" {
+
+                let tokenFromApple = transaction.appAccountToken
+                let currentToken = UUID(uuidString: AuthManager.shared.user?.appAccountToken_apple ?? "")
+
+                if tokenFromApple == currentToken {
+                    await store.updateCustomerProductStatus()
+                    restoreResultMessage = "Rarelygroovy+ was restored successfully."
+                    restoreWasSuccessful = true
+                    restored = true
+                    break
+                } else {
+                    restoreResultMessage = "Restore failed. Please make sure you're signed in to the Rarelygroovy account that made the Rarelygroovy+ purchase."
+                    showRestoreResultAlert = true
+                    restoreWasSuccessful = false
+                    return
+                }
+            }
+        }
+
+        if !restored {
+            restoreResultMessage = "No valid Rarelygroovy+ purchase was found to restore."
+            restoreWasSuccessful = false
+        }
+
+        showRestoreResultAlert = true
+    }
+
     func deleteAccount() async {
         guard let userId = authManager.user?.id else { return }
-        
+
         guard let url = URL(string: "https://enm-project-production.up.railway.app/api/delete-user/\(userId)") else {
             print("❌ Invalid URL")
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (_, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 print("✅ Account deleted")
                 DispatchQueue.main.async {
@@ -136,11 +189,27 @@ struct ProfileView: View {
                     NotificationCenter.default.post(name: Notification.Name("UserDidLogout"), object: nil)
                 }
             } else {
-                let message = String(data: data, encoding: .utf8) ?? "(no response)"
                 print("❌ Failed to delete account")
             }
         } catch {
             print("❌ Error deleting account: \(error)")
+        }
+    }
+    
+    func openSupportEmail() {
+        let email = "rarelygroovy@gmail.com"
+        let subject = "Restore Purchase Help"
+        let body = "Hi Rarelygroovy team,\n\nI'm having trouble restoring my Rarelygroovy+ purchase.\n\n(Describe your issue here)"
+        
+        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "mailto:\(email)?subject=\(encodedSubject)&body=\(encodedBody)"
+        
+        if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        } else {
+            emailErrorMessage = "Could not open your email app. Please contact us manually at \(email)"
+            showEmailErrorAlert = true
         }
     }
 }

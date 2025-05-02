@@ -127,6 +127,8 @@ struct SignUpFormView: View {
 }
 
 extension AuthManager {
+    
+    @MainActor
     func signUp(username: String, password: String, promoCode: String) async throws {
         guard let url = URL(string: "https://enm-project-production.up.railway.app/api/create-user") else {
             throw URLError(.badURL)
@@ -149,11 +151,8 @@ extension AuthManager {
         }
         
         let signUpResponse = try JSONDecoder().decode(AuthManager.LoginResponse.self, from: data)
-        DispatchQueue.main.async {
-            self.user = signUpResponse.user
-            print(self.user);
-            NotificationCenter.default.post(name: Notification.Name("UserDidSignUp"), object: nil)
-        }
+        self.user = signUpResponse.user
+        NotificationCenter.default.post(name: Notification.Name("UserDidSignUp"), object: nil)
     }
 }
 

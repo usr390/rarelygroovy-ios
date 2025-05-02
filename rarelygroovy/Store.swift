@@ -12,6 +12,7 @@ class Store: ObservableObject {
     @Published private(set) var products: [Product]
     @Published private(set) var purchasedProducts: [Product] = []
     
+    
     var updateListenerTask: Task<Void, Error>? = nil
 
     init() {
@@ -211,6 +212,7 @@ class Store: ObservableObject {
                 print("✅ Plusify success")
                 DispatchQueue.main.async {
                     AuthManager.shared.user?.plus = true
+                    NotificationCenter.default.post(name: Notification.Name("UserDidPlusify"), object: nil)
                 }
             } else {
                 let msg = String(data: data, encoding: .utf8) ?? "(no message)"

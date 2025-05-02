@@ -53,7 +53,7 @@ struct MainTabView: View {
             }
         )
         // light haptic feedback on tab change
-        .onChange(of: selection) { _ in
+        .onChange(of: selection) {
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
         }

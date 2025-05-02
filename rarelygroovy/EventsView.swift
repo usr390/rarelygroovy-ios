@@ -8,6 +8,7 @@ struct EventsView: View {
     @State private var recentlyAddedOnly = false  // New chip filter state
     @State private var selectedEventGenres = Set<String>()
     @State private var showDebutingOnly = false
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ZStack {
@@ -52,19 +53,27 @@ struct EventsView: View {
                                         .font(.subheadline)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 6)
-                                        .background(isSelected ? Color.primary : Color.gray.opacity(0.3))
-                                        .foregroundColor(isSelected ? Color.black : .primary)
-                                        .cornerRadius(16)
+                                        .background(
+                                            isSelected
+                                                ? (colorScheme == .dark ? Color.white : Color.primary)
+                                                : (colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3))
+                                        )
+                                        .foregroundColor(
+                                            isSelected
+                                                ? (colorScheme == .dark ? Color.black : Color.white)
+                                                : (colorScheme == .dark ? Color.white : Color.primary)
+                                        )                                        .cornerRadius(16)
                                 }
                             }
                         }
                         .padding(.horizontal, 8)
                     }
                     .padding(.vertical, 8)
-                                        
+                    // Debuting, touring, recently added chips
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             
+                            // Debuting chip: only show if any event has a debuting artist.
                             // Debuting chip: only show if any event has a debuting artist.
                             if hasDebutingArtist {
                                 Button(action: {
@@ -78,12 +87,12 @@ struct EventsView: View {
                                     .font(.subheadline)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
-                                    .background(showDebutingOnly ? Color.primary : Color.gray.opacity(0.3))
-                                    .foregroundColor(showDebutingOnly ? Color.black : .primary)
+                                    .background(chipBackground(isSelected: showDebutingOnly))
+                                    .foregroundColor(chipForeground(isSelected: showDebutingOnly))
                                     .cornerRadius(16)
                                 }
                             }
-                            
+
                             // Touring chip
                             Button(action: {
                                 nonRGVOnly.toggle()
@@ -96,11 +105,11 @@ struct EventsView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(nonRGVOnly ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(nonRGVOnly ? Color.black : .primary)
+                                .background(chipBackground(isSelected: nonRGVOnly))
+                                .foregroundColor(chipForeground(isSelected: nonRGVOnly))
                                 .cornerRadius(16)
                             }
-                            
+
                             // Recently Added chip
                             Button(action: {
                                 recentlyAddedOnly.toggle()
@@ -113,25 +122,56 @@ struct EventsView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(recentlyAddedOnly ? Color.primary : Color.gray.opacity(0.3))
-                                .foregroundColor(recentlyAddedOnly ? Color.black : .primary)
+                                .background(chipBackground(isSelected: recentlyAddedOnly))
+                                .foregroundColor(chipForeground(isSelected: recentlyAddedOnly))
                                 .cornerRadius(16)
                             }
-                            
                             Spacer()
                         }
                         .padding(.horizontal, 8)
                     }
                     .padding(.bottom, 8)
                     
+                    if viewModel.isLoading {
+                        VStack {
+                            Spacer()
+                            ProgressView("Loading Events...")
+                                .progressViewStyle(CircularProgressViewStyle())
+                            Spacer()
+                        }
+                        .padding(.vertical, 40)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(UIColor.systemBackground).opacity(0.8))
+                    }
+                    
                     VStack(alignment: .leading, spacing: 16) {
                         // Check if any events match the search criteria
-                        if filteredEvents.isEmpty && !viewModel.isLoading && !searchQuery.isEmpty {
-                            Text("No events match search criteria.")
+                        if filteredEvents.isEmpty && !viewModel.isLoading {
+                            VStack(spacing: 12) {
+                                Divider()
+                                
+                                Text("No events match search criteria.")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.vertical, 8)
+                                
+                                Divider()
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("* Start times might vary (e.g., punk time)")
+                                    if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
+                                        Text("* See Rarelygroovy+ for our full event list")
+                                    }
+                                }
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
-                                .padding()
-                        } else {
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 8)
+                            }
+                            .padding(.horizontal)
+                        }
+                    else {
                             // Group filtered events by day and iterate
                             ForEach(Array(groupEventsByDay(filteredEvents).enumerated()), id: \.element.dayStart) { (index, dayGroup) in
                                 
@@ -335,29 +375,27 @@ struct EventsView: View {
                                 }
                             }
                             
-                            if !viewModel.isLoading && !viewModel.events.isEmpty {
+                        if !viewModel.isLoading && !viewModel.events.isEmpty {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text("* Start times might vary (e.g., punk time)")
-                                    .font(.footnote)
-                                    .foregroundColor(.secondary)
-                                    .padding()
+                                if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
+                                    Text("* See Rarelygroovy+ for our full event list")
+                                }
                             }
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                        }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical)
                     .padding(.horizontal)
                 }
-            }
-            
-            if viewModel.isLoading {
-                VStack {
-                    Spacer()
-                    ProgressView("Loading Events...")
-                        .progressViewStyle(CircularProgressViewStyle())
-                    Spacer()
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("UserDidPlusify"))) { _ in
+                    viewModel.fetchEvents(userInitiated: false)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(UIColor.systemBackground).opacity(0.8))
             }
         }
         .onAppear {
@@ -367,6 +405,24 @@ struct EventsView: View {
         }
         .refreshable {
             viewModel.fetchEvents(userInitiated: true)
+        }
+
+    }
+    
+    
+    func chipBackground(isSelected: Bool) -> Color {
+        if isSelected {
+            return colorScheme == .dark ? Color.white : Color.primary
+        } else {
+            return colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3)
+        }
+    }
+
+    func chipForeground(isSelected: Bool) -> Color {
+        if isSelected {
+            return colorScheme == .dark ? Color.black : Color.white
+        } else {
+            return colorScheme == .dark ? Color.white : Color.primary
         }
     }
 

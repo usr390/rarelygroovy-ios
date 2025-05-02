@@ -43,6 +43,7 @@ final class AuthManager: ObservableObject {
         let user: User
     }
     
+    @MainActor
     func login(username: String, password: String) async throws {
         guard let url = URL(string: "https://enm-project-production.up.railway.app/api/login") else {
             throw URLError(.badURL)
@@ -59,11 +60,8 @@ final class AuthManager: ObservableObject {
         }
         
         let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
-        DispatchQueue.main.async {
-            self.user = loginResponse.user
-            // post a login notification so others can refresh their content
-            NotificationCenter.default.post(name: Notification.Name("UserDidLogin"), object: nil)
-        }
+        self.user = loginResponse.user
+        NotificationCenter.default.post(name: Notification.Name("UserDidLogin"), object: nil)
     }}
 func mapErrorToMessage(_ error: Error) -> String {
     if let urlError = error as? URLError {
