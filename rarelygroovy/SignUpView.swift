@@ -62,9 +62,15 @@ struct SignUpFormView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Sign up for a Rarelygroovy account")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+            VStack(spacing: 8) {
+              Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                Text("Sign up for a Rarelygroovy account")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+            }
             TextField("Username", text: $username)
                 .autocapitalization(.none)
                 .padding()

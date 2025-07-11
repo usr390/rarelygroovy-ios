@@ -311,6 +311,8 @@ struct VenueAutoCompleteOverlay: View {
         }
     }
 }
+
+
 struct PromoterAutoCompleteOverlay: View {
     @Binding var text: String
     @Binding var selectedPromoter: Promoter?

@@ -12,7 +12,7 @@ struct LoginView: View {
             VStack {
                 LoginFormView()
                 NavigationLink(destination: SignUpView()) {
-                    Text("Don't have an account? Sign up")
+                    Text("don't have an account? sign up")
                         .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .underline()
                 }
@@ -39,9 +39,15 @@ struct LoginFormView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Log in to Rarelygroovy")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+            VStack(spacing: 8) {
+              Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                Text("Log in to Rarelygroovy")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+            }
             TextField("username", text: $username)
                 .autocapitalization(.none)
                 .padding()

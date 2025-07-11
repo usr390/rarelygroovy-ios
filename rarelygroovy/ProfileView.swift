@@ -14,6 +14,7 @@ struct ProfileView: View {
     @State private var showEmailErrorAlert = false
     @State private var emailErrorMessage = ""
     @State private var restoreWasSuccessful = false
+    @StateObject private var statsVM = PlusStatsViewModel()
 
     var body: some View {
         VStack(spacing: 24) {
@@ -22,6 +23,22 @@ struct ProfileView: View {
             HStack {
                 Spacer()
                 Menu {
+                    // Email Us
+                    Link(destination: URL(string: "mailto:rarelygroovy@gmail.com")!) {
+                        VStack {
+                            Text("Email us")
+                                .font(.caption)
+                        }
+                        .foregroundColor(.secondary)
+                    }
+
+                    // Instagram
+                    Link(destination: URL(string: "https://instagram.com/rarelygroovy")!) {
+                        VStack {
+                            Text("Our Instagram")
+                        }
+                        .foregroundColor(.secondary)
+                    }
                     Button("Restore purchases") {
                         Task {
                             await runRestore()
@@ -80,58 +97,10 @@ struct ProfileView: View {
                         .fontWeight(.bold)
                 }
             }
-
-            // Premium Section
-            if let user = authManager.user {
-                VStack(alignment: .leading, spacing: 12) {
-                    if user.plus {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Your Rarelygroovy+")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Label("Access to full artist history", systemImage: "music.note.list")
-                                Label("Access to full event list", systemImage: "calendar")
-                            }
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 8)
-                    } else {
-                        Text("Rarelygroovy+")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-
-                        Text("Unlock our full event list and artist directory.")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-
-                        Button(action: {
-                            showUpgradeDrawer = true
-                        }) {
-                            Text("upgrade account")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(colorScheme == .dark ? Color.white : Color.black)
-                                .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
-                                .cornerRadius(8)
-                        }
-                    }
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity)
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(16)
-                .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 4)
-                .padding(.horizontal)
-            }
-
             Spacer()
         }
         .sheet(isPresented: $showUpgradeDrawer) {
-            UpgradeDrawerOverlay(showDrawer: $showUpgradeDrawer, product: store.products.first!, purchasingEnabled: true)
+            UpgradeDrawerOverlay(showDrawer: $showUpgradeDrawer, statsVM: statsVM, product: store.products.first!, purchasingEnabled: true)
         }
     }
 
@@ -241,6 +210,7 @@ struct UpgradeDrawerOverlay: View {
     @State var isPurchased: Bool = false
     @Binding var showDrawer: Bool
     @Environment(\.colorScheme) var colorScheme
+    @ObservedObject var statsVM: PlusStatsViewModel
     
     let product: Product
     let purchasingEnabled: Bool
@@ -258,78 +228,80 @@ struct UpgradeDrawerOverlay: View {
             // Black background with opacity
             Color.black.opacity(0.9)
                 .ignoresSafeArea()
-            
-            // Top Cancel button overlay
-            VStack {
-                HStack {
-                    Spacer()
-                    Button("Cancel") {
-                        showDrawer = false
-                    }
-                    .foregroundColor(.white)
-                    .padding()
-                }
-                Spacer()
-            }
-            
-            // Centered content
-            VStack {
-                Spacer()
-                
-                VStack(spacing: 16) {
-                    // insert your logo image here
-                    Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .padding(.bottom, 8)
-                    
-                    Text("Upgrade to Rarelygroovy+")
-                        .font(.title)
-                        .fontWeight(.bold)
+            ScrollView {
+                // Top Cancel button overlay
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button("Cancel") {
+                            showDrawer = false
+                        }
                         .foregroundColor(.white)
-                    
-                    // Benefits list section
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(premiumFeatures, id: \.self) { feature in
-                            HStack {
-                                Text(feature)
-                                    .font(.body)
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "checkmark.seal.fill")
-                                    .foregroundColor(.green)
-                            }
-                            .padding(.horizontal)
-                        }
-                    }
-                    .padding(.top, 8)
-                    
-                    VStack(spacing: 8) {
-                        Button("upgrade for \(store.products[0].displayPrice)") {
-                            Task {
-                                try await store.purchase(store.products[0])
-                                showDrawer = false
-                            }
-                        }
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white)
-                        .foregroundColor(.black)
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        
-                        Text("(one time purchase)")
-                            .font(.footnote)
-                            .foregroundColor(.white)
                     }
+                    Spacer()
                 }
-                .padding()
                 
-                Spacer()
+                // Centered content
+                VStack {
+                    Spacer()
+                    
+                    VStack(spacing: 16) {
+                        
+                        VStack(spacing: 8) {
+                          Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                          Text("Upgrade to Rarelygroovy+")
+                            .font(.title2).fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        }
+                        
+                        // Benefits list section
+                        // perks + disclaimer
+                        VStack(spacing: 16) {
+                          PerkSection(title: "Artist Directory", perks: statsVM.artistPerks)
+                          PerkSection(title: "Events",           perks: statsVM.eventPerks)
+
+                          Text("* Numbers continue to grow as we add events and artists to Rarelygroovy!")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: 340, alignment: .leading)
+                        }
+                        
+                        // spacer pushes button to bottom
+                        Spacer(minLength: 20)
+                        
+                        VStack(spacing: 8) {
+                            Button("upgrade for \(store.products[0].displayPrice)") {
+                                Task {
+                                    try await store.purchase(store.products[0])
+                                    showDrawer = false
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white)
+                            .foregroundColor(.black)
+                            .cornerRadius(8)
+                            .padding(.horizontal)
+                            
+                            Text("(one time purchase)")
+                                .font(.footnote)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding()
+                    
+                    Spacer()
+                }
+                .offset(y: -10) // shifts the content up 20 points; adjust as needed
+                
             }
-            .offset(y: -10) // shifts the content up 20 points; adjust as needed
         }
+        .onAppear { statsVM.fetchAll() }
     }
 }
 
@@ -408,3 +380,4 @@ struct AbstractAvatar: View {
 func stableHash(_ input: String) -> Int {
     input.utf8.reduce(0) { ($0 &* 31) &+ Int($1) }
 }
+

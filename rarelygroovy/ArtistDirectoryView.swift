@@ -4,6 +4,7 @@ import FontAwesome_swift
 struct ArtistDirectoryView: View {
     
     @StateObject private var viewModel = ArtistsViewModel()
+    @StateObject private var statsVM = PlusStatsViewModel()
     
     // User’s typed text for name filtering
     @State private var searchText = ""
@@ -15,12 +16,18 @@ struct ArtistDirectoryView: View {
     @State private var isRandomArtistMode: Bool = false
     @State private var isTimelineMode: Bool = false
     @State private var isRecentlyTouredMode: Bool = false
+    @State private var isWomanFrontedMode: Bool = false
     @State private var randomArtist: Artist? = nil
     // Extra filter state for Recently Added
     @State private var isRecentlyAddedMode: Bool = false
-    @State private var activePlatformChip: String? = nil
+    @State private var selectedPlatformChips = Set<String>()
     @Environment(\.colorScheme) var colorScheme
-
+    @State private var showPlusOverlay = false
+    @State private var isPastArtistsMode: Bool = false
+    private func matchesPastArtistsFilter(_ artist: Artist) -> Bool {
+        guard isPastArtistsMode else { return true }
+        return artist.status.lowercased() != "active"
+    }
     
     // Dictionary mapping top-level genres to subgenres
     let genreMapping: [String: [String]] = [
@@ -133,6 +140,8 @@ struct ArtistDirectoryView: View {
             .filter(matchesGenreSelection)
             .filter(matchesPlatformFilter)
             .filter(matchesRecentlyTouredFilter)
+            .filter(matchesPastArtistsFilter)
+            .filter(matchesWomanFrontedFilter)
     }
 
     private var sortedArtists: [Artist] {
@@ -167,26 +176,30 @@ struct ArtistDirectoryView: View {
     }
 
     private func matchesPlatformFilter(_ artist: Artist) -> Bool {
-        guard let platform = activePlatformChip else { return true }
-        guard let link = artist.links?[platform] else { return false } // must exist
-        return link.lowercased() != "pending"                          // and not be pending
+      guard !selectedPlatformChips.isEmpty else { return true }
+      // OR-style: show artist if they have *any* of the selected platforms
+      return selectedPlatformChips.contains { platform in
+        guard let link = artist.links?[platform] else { return false }
+        return link.lowercased() != "pending"
+      }
     }
 
     private func matchesRecentlyTouredFilter(_ artist: Artist) -> Bool {
         if isRecentlyTouredMode {
             return artist.location.lowercased() != "rgv" // non-RGV only
         } else {
-            return artist.location.lowercased() == "rgv" // RGV only
+            return true // show all by default
         }
+    }
+    
+    private func matchesWomanFrontedFilter(_ artist: Artist) -> Bool {
+        guard isWomanFrontedMode else { return true }
+        return artist.womanfronted ?? false
     }
     
     // Final list after applying extra filters
     private var finalArtists: [Artist] {
         var artists = filteredArtists
-
-        if isRecentlyTouredMode {
-            artists = artists.filter { $0.location.lowercased() != "rgv" }
-        }
 
         if isTimelineMode {
             artists = artists.sorted {
@@ -215,18 +228,6 @@ struct ArtistDirectoryView: View {
         if isRecentlyAddedMode {
             artists = artists.sorted {
                 creationTimestamp(from: $0.id) > creationTimestamp(from: $1.id)
-            }
-        }
-        
-        // 🔍 Platform-specific filter
-        if let platform = activePlatformChip {
-            artists = artists.filter { artist in
-                if let links = artist.links,
-                   let link = links[platform],
-                   link.lowercased() != "pending" {
-                    return true
-                }
-                return false
             }
         }
 
@@ -307,20 +308,22 @@ struct ArtistDirectoryView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(platformChips, id: \.key) { platform in
-                                let isSelected = activePlatformChip == platform.key
-                                Button(action: {
-                                    activePlatformChip = isSelected ? nil : platform.key
-                                }) {
-                                    HStack(spacing: 4) {
-                                        Text(platform.label)
-                                    }
-                                    .font(.subheadline)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(chipBackground(isSelected: isSelected))
-                                    .foregroundColor(chipForeground(isSelected: isSelected))
-                                    .cornerRadius(16)
-                                }
+                                // in your ScrollView(forEach platformChips)…
+                                let isSelected = selectedPlatformChips.contains(platform.key)
+                                Button {
+                                  if isSelected {
+                                    selectedPlatformChips.remove(platform.key)
+                                  } else {
+                                    selectedPlatformChips.insert(platform.key)
+                                  }
+                                } label: {
+                                  Text(platform.label)
+                                        .font(.subheadline)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(chipBackground(isSelected: isSelected))
+                                        .foregroundColor(chipForeground(isSelected: isSelected))
+                                        .cornerRadius(16)                                }
                             }
                         }
                         .padding(.horizontal, 8)
@@ -364,7 +367,7 @@ struct ArtistDirectoryView: View {
                                 .foregroundColor(chipForeground(isSelected: isRecentlyAddedMode))
                                 .cornerRadius(16)
                             }
-                            
+                                                        
                             // Timeline Chip
                             Button(action: {
                                 isTimelineMode.toggle()
@@ -382,9 +385,52 @@ struct ArtistDirectoryView: View {
                                 .cornerRadius(16)
                             }
                             
-                            // Recently Toured Chip
                             Button(action: {
-                                isRecentlyTouredMode.toggle()
+                                if true {
+                                    isPastArtistsMode.toggle()
+                                } else {
+                                    withAnimation {
+                                        showPlusOverlay = true  // make sure this state is declared and tied to your perks overlay
+                                    }
+                                }
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Past Artists")
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(chipBackground(isSelected: isPastArtistsMode))
+                                .foregroundColor(chipForeground(isSelected: isPastArtistsMode))
+                                .cornerRadius(16)
+                            }
+                            
+                            Button(action: {
+                                isWomanFrontedMode.toggle()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text("Woman Fronted")
+                                    Image(systemName: "crown.fill")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(chipBackground(isSelected: isWomanFrontedMode))
+                                .foregroundColor(chipForeground(isSelected: isWomanFrontedMode))
+                                .cornerRadius(16)
+                            }
+                            
+                            Button(action: {
+                                if true {
+                                    isRecentlyTouredMode.toggle()
+                                } else {
+                                    withAnimation {
+                                        showPlusOverlay = true
+                                    }
+                                }
                             }) {
                                 HStack(spacing: 4) {
                                     Text("Recently Toured")
@@ -397,8 +443,7 @@ struct ArtistDirectoryView: View {
                                 .background(chipBackground(isSelected: isRecentlyTouredMode))
                                 .foregroundColor(chipForeground(isSelected: isRecentlyTouredMode))
                                 .cornerRadius(16)
-                            }
-                        }
+                            }                        }
                         .padding(.horizontal, 8) // Explicit 8pt padding left/right
                     }
                     .padding(.bottom, 8)
@@ -415,9 +460,19 @@ struct ArtistDirectoryView: View {
                         .background(Color(UIColor.systemBackground).opacity(0.8))
 
                     }
+                    if !viewModel.isLoading {
+                        HStack {
+                            Text("\(finalArtists.count) of \(viewModel.artists.count) artists shown")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 12)
+                            Spacer()
+                        }
+                    }
                     
                     LazyVStack(alignment: .center, spacing: 0) {
-                        if finalArtists.isEmpty && !viewModel.isLoading {
+                        
+                        if finalArtists.isEmpty && !viewModel.artists.isEmpty {
                             VStack(spacing: 12) {
                                 Divider()
                                 
@@ -430,10 +485,7 @@ struct ArtistDirectoryView: View {
                                 Divider()
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("* Start and end years are best estimates")
-                                    if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
-                                        Text("* See Rarelygroovy+ for our full directory")
-                                    }
+                                  Text("* Information presented is our best estimate")
                                 }
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
@@ -606,18 +658,17 @@ struct ArtistDirectoryView: View {
                             }
                             if !viewModel.isLoading && !viewModel.artists.isEmpty {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("* Start and end years are best estimates")
-                                    if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
-                                        Text("* See Rarelygroovy+ for our full directory")
-                                    }
+                                  Text("* Information presented is our best estimate")
                                 }
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
+                                .padding(.top, 8)
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical)
                     .padding(.horizontal)
                 }
                 .refreshable {
@@ -632,6 +683,9 @@ struct ArtistDirectoryView: View {
             if viewModel.artists.isEmpty {
                 viewModel.fetchArtists()
             }
+        }
+        .sheet(isPresented: $showPlusOverlay) {
+          ArtistsRarelygroovyPlusOverlay(statsVM: statsVM, userIsSignedIn: AuthManager.shared.user != nil)
         }
     }
 }
@@ -725,4 +779,97 @@ func formattedCreationDate(from objectId: String) -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = "MM/dd/yyyy, h:mm a"  // e.g., "04/27/2025, 3:45 PM"
     return formatter.string(from: date)
+}
+
+
+
+struct ArtistsRarelygroovyPlusOverlay: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.colorScheme) private var colorScheme
+  @ObservedObject var statsVM: PlusStatsViewModel
+    @EnvironmentObject var store: Store
+    let userIsSignedIn: Bool
+
+
+  var body: some View {
+    ZStack {
+      Color(colorScheme == .dark ? .black : .white)
+        .ignoresSafeArea()
+
+      ScrollView {
+        VStack(spacing: 24) {
+          HStack {
+            Spacer()
+            Button { dismiss() } label: {
+              Image(systemName: "xmark.circle.fill")
+                .font(.title2)
+                .foregroundColor(.secondary)
+            }
+          }
+
+          VStack(spacing: 8) {
+            Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
+              .resizable()
+              .scaledToFit()
+              .frame(width: 100, height: 100)
+            Text("Upgrade to Rarelygroovy+")
+              .font(.title2).fontWeight(.bold)
+              .foregroundColor(.primary)
+          }
+
+          // perks + disclaimer
+          VStack(spacing: 16) {
+            PerkSection(title: "Artist Directory", perks: statsVM.artistPerks)
+            PerkSection(title: "Events",           perks: statsVM.eventPerks)
+
+            Text("* Numbers continue to grow as we add events and artists to Rarelygroovy!")
+              .font(.footnote)
+              .foregroundColor(.secondary)
+              .multilineTextAlignment(.leading)
+              .frame(maxWidth: 340, alignment: .leading)
+          }
+
+          // spacer pushes button to bottom
+          Spacer(minLength: 20)
+
+          // themed action button
+            Group {
+              if userIsSignedIn {
+                  VStack(spacing: 8) {
+                      Button("upgrade for \(store.products[0].displayPrice)") {
+                          Task {
+                              try await store.purchase(store.products[0])
+                          }
+                      }
+                      .frame(maxWidth: .infinity)
+                      .padding()
+                      .background(colorScheme == .dark ? Color.white : Color.black)
+                      .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
+                      .cornerRadius(12)
+                      
+                      Text("(one time purchase)")
+                          .font(.footnote)
+                          .foregroundColor(.white)
+                  }
+              } else {
+                Text("Log in or sign up for Rarelygroovy to upgrade")
+                  .font(.body)
+                  .foregroundColor(.secondary)
+                  .frame(maxWidth: .infinity)
+                  .multilineTextAlignment(.center)
+                  .padding()
+                  .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                      .stroke(Color.secondary, lineWidth: 1)
+                  )
+              }
+            }
+            .padding(.horizontal)
+        }
+        .padding()
+        .multilineTextAlignment(.center)
+      }
+    }
+    .onAppear { statsVM.fetchAll() }
+  }
 }

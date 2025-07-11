@@ -4,6 +4,8 @@ import FontAwesome_swift
 struct EventDetailView: View {
     @StateObject private var viewModel = EventsViewModel()
     let event: Event
+    @Environment(\.colorScheme) var colorScheme
+
     
     var body: some View {
         ScrollView {
@@ -86,16 +88,26 @@ struct EventDetailView: View {
                     }
 
                     // Promoter
-                    if let promoter = event.promoter {
+                    if let promoter1 = event.promoter {
                         Divider()
                             .frame(width: 50, height: 1)
                             .background(Color.gray)
                             .padding(.vertical, 8)
-                        
-                        Text(promoter.name ?? "Unknown")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+
+                        // Combine primary and secondary promoters if available
+                        let name1 = promoter1.name ?? "Unknown"
+                        if let promoter2 = event.promoter2 {
+                            let name2 = promoter2.name ?? "Unknown"
+                            Text("\(name1) & \(name2)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text(name1)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
+
                     
                     // Flyer  link, ticket link
                     HStack(spacing: 32) {
@@ -129,38 +141,43 @@ struct EventDetailView: View {
                     }
                     
                     // Row for door time, show time, cover
+                    let doorStr  = event.doorTime.flatMap(formatAsLocalTime)
+                    let showStr  = event.dateTime.flatMap(formatAsLocalTime)
+                    let monthDay = event.dateTime.flatMap(formatAsMonthDay)
+
                     HStack(spacing: 3) {
-                        if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }),
-                           let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
-                            Text("doors \(doorStr), \(showStr)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        } else if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }) {
-                            Text("doors \(doorStr)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        } else if let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
-                            Text(showStr)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                        // 1) doors + show
+                        if let door = doorStr, let show = showStr {
+                            Text("doors \(door), \(show)")
+                                .font(.subheadline).foregroundColor(.secondary)
+                        } else if let door = doorStr {
+                            Text("doors \(door)")
+                                .font(.subheadline).foregroundColor(.secondary)
+                        } else if let show = showStr {
+                            Text(show)
+                                .font(.subheadline).foregroundColor(.secondary)
                         }
-                        
-                        if let showStr = event.dateTime.flatMap({ formatAsMonthDay($0) }) {
-                            Text("·")
-                            Text(showStr)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+
+                        // 2) month-day always shown if available, but only prefix “·” when something preceded it
+                        if let month = monthDay {
+                            if doorStr != nil || showStr != nil {
+                                Text("·")
+                            }
+                            Text(month)
+                                .font(.subheadline).foregroundColor(.secondary)
                         }
+
+                        // 3) cover: only prefix “·” if *anything* came before
                         if let cover = event.cover {
-                            Text("·")
+                            if doorStr != nil || showStr != nil || monthDay != nil {
+                                Text("·")
+                            }
                             if cover == 0 {
                                 Text("No Cover")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .font(.subheadline).foregroundColor(.secondary)
                             } else {
                                 Text("$\(cover)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .font(.subheadline).foregroundColor(.secondary)
                             }
                         }
                     }
@@ -184,9 +201,14 @@ struct EventDetailView: View {
                             .multilineTextAlignment(.center)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.horizontal)
-                .padding(.vertical, 16)
+                .padding()
+                .background(
+                    Color(colorScheme == .dark ? .black : .white)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 0)
+                        .stroke(Color.primary, lineWidth: 3)
+                )
                 
                 // Mini Artist Directory (Lineup)
                 if let artists = event.artists, !artists.isEmpty {
@@ -346,29 +368,55 @@ struct EventDetailView: View {
                 }
                 
                 // Promoter section
-                if let promoter = event.promoter, promoter.link != "pending" {
-                    Text("Promoter")
-                        .font(.title)
-                        .padding(.top, 50)
-                        .foregroundColor(.gray)
-                    VStack(alignment: .center, spacing: 8) {
-                        // Promoter name
-                        Text(promoter.name ?? "Unknown")
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                        
-                        // Promoter link: check that it exists and is not empty
-                        if let link = promoter.link, !link.isEmpty, let url = URL(string: link) {
-                            let icon = fontAwesomeIcon(for: "instagram")
-                            Link(destination: url) {
-                                Text(String.fontAwesomeIcon(name: icon))
-                                    .font(.custom(fontName(for: icon), size: 24))
-                                    .foregroundColor(.gray)
-                            }
-                            .frame(width: 35, height: 40)
+                // only show if at least one promoter is valid
+                let p1 = event.promoter
+                let p2 = event.promoter2
+
+                if (p1?.link != "pending") || (p2?.link != "pending") {
+                  // header changes based on whether you have two
+                  Text((p2 != nil ? "Promoters" : "Promoter"))
+                    .font(.title)
+                    .padding(.top, 50)
+                    .foregroundColor(.gray)
+
+                  VStack(spacing: 8) {
+                    // first promoter
+                    if let promo = p1, promo.link != "pending" {
+                      Text(promo.name ?? "Unknown")
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                      if let urlString = promo.link,
+                         let url = URL(string: urlString) {
+                        let icon = fontAwesomeIcon(for: "instagram")
+                        Link(destination: url) {
+                          Text(String.fontAwesomeIcon(name: icon))
+                            .font(.custom(fontName(for: icon), size: 24))
+                            .foregroundColor(.gray)
                         }
+                        .frame(width: 35, height: 40)
+                      }
                     }
-                    .padding(.horizontal)
+
+                    // second promoter, if any
+                    if let promo2 = p2, promo2.link != "pending" {
+                      Text(promo2.name ?? "Unknown")
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                      if let urlString = promo2.link,
+                         let url = URL(string: urlString) {
+                        let icon = fontAwesomeIcon(for: "instagram")
+                        Link(destination: url) {
+                          Text(String.fontAwesomeIcon(name: icon))
+                            .font(.custom(fontName(for: icon), size: 24))
+                            .foregroundColor(.gray)
+                        }
+                        .frame(width: 35, height: 40)
+                      }
+                    }
+                  }
+                  .padding(.horizontal)
                 }
                 
                 if let venue = event.venue, venue.link != "pending" {

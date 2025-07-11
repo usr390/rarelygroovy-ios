@@ -3,9 +3,13 @@ import Foundation
 class ArtistsViewModel: ObservableObject {
     @Published var artists: [Artist] = []
     @Published var isLoading: Bool = false
+    @Published var inactiveLocalCount: Int? = nil      // ← new
+    @Published var touringArtistsCount: Int?   = nil  // ← number of touring artists
+
+    
     private var firstLoad = true
     private var logoutObserver: Any?
-
+    
     init() {
         logoutObserver = NotificationCenter.default.addObserver(forName: Notification.Name("UserDidLogout"), object: nil, queue: .main) { [weak self] _ in
             self?.fetchArtists()
@@ -13,6 +17,8 @@ class ArtistsViewModel: ObservableObject {
         NotificationCenter.default.addObserver(forName: Notification.Name("UserDidLogin"), object: nil, queue: .main) { [weak self] _ in
             self?.fetchArtists()
         }
+        fetchLocalInactiveAndTouringCounts()                        // ← initial fetch
+        
     }
     
     deinit {
@@ -20,13 +26,13 @@ class ArtistsViewModel: ObservableObject {
             NotificationCenter.default.removeObserver(observer)
         }
     }
-
+    
     func fetchArtists(userInitiated: Bool = false) {
         if firstLoad || !userInitiated {
             DispatchQueue.main.async { self.isLoading = true }
         }
         
-        var urlComponents = URLComponents(string: "https://enm-project-production.up.railway.app/api/artistDirectory")
+        var urlComponents = URLComponents(string: "https://enm-project-production.up.railway.app/api/artistDirectoryTrans")
         if let username = AuthManager.shared.user?.username {
             urlComponents?.queryItems = [URLQueryItem(name: "username", value: username)]
         }
@@ -66,4 +72,40 @@ class ArtistsViewModel: ObservableObject {
                 print("Error decoding artists: \(error)")
             }
         }.resume()
-    }}
+    }
+    
+    func fetchLocalInactiveAndTouringCounts() {
+        guard let url = URL(string: "https://enm-project-production.up.railway.app/api/artists/local-inactive-count")
+        else {
+            print("❌ Invalid URL for counts")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, resp, error in
+            if let err = error {
+                print("❌ Error fetching counts:", err)
+                return
+            }
+            guard
+              let http = resp as? HTTPURLResponse, http.statusCode == 200,
+              let data = data
+            else {
+                print("❌ Bad response fetching counts")
+                return
+            }
+            do {
+                let decoded = try JSONDecoder()
+                    .decode(LocalVsTouringCountResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.inactiveLocalCount  = decoded.inactiveLocalArtists
+                    self.touringArtistsCount = decoded.touringArtists
+                }
+            } catch {
+                print("❌ Decoding counts failed:", error)
+            }
+        }
+        .resume()
+    }
+    
+}
+

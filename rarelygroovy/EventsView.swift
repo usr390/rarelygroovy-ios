@@ -3,16 +3,90 @@ import SwiftUI
 struct EventsView: View {
     
     @StateObject private var viewModel = EventsViewModel()
+    @StateObject private var statsVM = PlusStatsViewModel()
+    
     @State private var searchQuery = ""
     @State private var nonRGVOnly = false  // New chip filter state
     @State private var recentlyAddedOnly = false  // New chip filter state
     @State private var selectedEventGenres = Set<String>()
     @State private var showDebutingOnly = false
     @Environment(\.colorScheme) var colorScheme
+    @State private var showPlusOverlay = false
+    @State private var showPastEventsOnly = false
+    
+    /// Takes any array of Events and applies your search + chip + genre + debut filters.
+    private func applyFilters(to events: [Event]) -> [Event] {
+        var list = events
+
+        // 1) text search
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+          list = list.filter { event in
+            let v = sanitize(event.venue?.name ?? "")
+            let p = sanitize(event.promoter?.name ?? "")
+            let c = sanitize(event.venue?.city ?? "")
+            let artistMatch = event.artists?.contains {
+              sanitize($0.name).localizedStandardContains(sanitize(trimmed))
+            } ?? false
+
+            return v.localizedStandardContains(sanitize(trimmed))
+                || p.localizedStandardContains(sanitize(trimmed))
+                || c.localizedStandardContains(sanitize(trimmed))
+                || artistMatch
+          }
+        }
+
+        // 2) touring
+        if nonRGVOnly {
+          list = list.filter { $0.artists?.contains { $0.location.lowercased() != "rgv" } ?? false }
+        }
+
+        // 3) recently added
+        if recentlyAddedOnly {
+          let cutoff = Calendar.current.date(byAdding: .day, value: -3, to: Date())!
+          list = list.filter {
+            guard let s = parseCreatedAt($0.creationDateTime ?? "") else { return false }
+            return s >= cutoff
+          }
+        }
+
+        // 4) genre chips
+        if !selectedEventGenres.isEmpty {
+            // lowercased() must be *called*, not referenced
+            let sel = Set(selectedEventGenres.map { $0.lowercased() })
+
+            list = list.filter { event in
+                guard let artists = event.artists else { return false }
+
+                // flatten each artist’s genre array, lowercasing each string
+                let genres = artists.flatMap { artist in
+                    artist.genre.map { $0.lowercased() }
+                }
+
+                return !Set(genres).isDisjoint(with: sel)
+            }
+        }
+
+        // 5) debuting
+        if showDebutingOnly {
+          list = list.filter {
+            let v = $0.venue?.debut ?? false
+            let p = $0.promoter?.debut ?? false
+            let a = $0.artists?.contains { ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false) || ($0.lastShow ?? false) } ?? false
+            return v || p || a
+          }
+        }
+
+        return list
+    }
+    
+    
     
     var body: some View {
         ZStack {
             VStack {
+                let raw = showPastEventsOnly ? viewModel.pastEvents : viewModel.events
+                let eventsToShow = applyFilters(to: raw)
                 ScrollView {
                     // Search input field
                     ZStack(alignment: .trailing) {
@@ -55,13 +129,13 @@ struct EventsView: View {
                                         .padding(.vertical, 6)
                                         .background(
                                             isSelected
-                                                ? (colorScheme == .dark ? Color.white : Color.primary)
-                                                : (colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3))
+                                            ? (colorScheme == .dark ? Color.white : Color.primary)
+                                            : (colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3))
                                         )
                                         .foregroundColor(
                                             isSelected
-                                                ? (colorScheme == .dark ? Color.black : Color.white)
-                                                : (colorScheme == .dark ? Color.white : Color.primary)
+                                            ? (colorScheme == .dark ? Color.black : Color.white)
+                                            : (colorScheme == .dark ? Color.white : Color.primary)
                                         )                                        .cornerRadius(16)
                                 }
                             }
@@ -92,7 +166,7 @@ struct EventsView: View {
                                     .cornerRadius(16)
                                 }
                             }
-
+                            
                             // Touring chip
                             Button(action: {
                                 nonRGVOnly.toggle()
@@ -109,7 +183,7 @@ struct EventsView: View {
                                 .foregroundColor(chipForeground(isSelected: nonRGVOnly))
                                 .cornerRadius(16)
                             }
-
+                            
                             // Recently Added chip
                             Button(action: {
                                 recentlyAddedOnly.toggle()
@@ -124,6 +198,32 @@ struct EventsView: View {
                                 .padding(.vertical, 6)
                                 .background(chipBackground(isSelected: recentlyAddedOnly))
                                 .foregroundColor(chipForeground(isSelected: recentlyAddedOnly))
+                                .cornerRadius(16)
+                            }
+                            
+                            // Past Events chip
+                            Button(action: {
+                                if true {
+                                    showPastEventsOnly.toggle()
+                                    if showPastEventsOnly {
+                                        viewModel.fetchPastEvents()
+                                    }
+                                } else {
+                                    withAnimation {
+                                        showPlusOverlay = true
+                                    }
+                                }
+                            }) {
+                                HStack {
+                                    Text("Past Events")
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .imageScale(.medium)
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(chipBackground(isSelected: showPastEventsOnly))
+                                .foregroundColor(chipForeground(isSelected: showPastEventsOnly))
                                 .cornerRadius(16)
                             }
                             Spacer()
@@ -142,11 +242,19 @@ struct EventsView: View {
                         .padding(.vertical, 40)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color(UIColor.systemBackground).opacity(0.8))
+                    } else {
+                        HStack {
+                            Text("\(eventsToShow.count) of \(raw.count) events listed")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 12)
+                            Spacer()
+                        }
                     }
                     
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Check if any events match the search criteria
-                        if filteredEvents.isEmpty && !viewModel.isLoading {
+                    LazyVStack(alignment: .leading, spacing: 16) {
+                                                
+                        if eventsToShow.isEmpty && !(showPastEventsOnly ? viewModel.pastEvents.isEmpty : viewModel.events.isEmpty) {
                             VStack(spacing: 12) {
                                 Divider()
                                 
@@ -158,25 +266,20 @@ struct EventsView: View {
                                 
                                 Divider()
                                 
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("* Start times might vary (e.g., punk time)")
-                                    if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
-                                        Text("* See Rarelygroovy+ for our full event list")
+                                if !showPastEventsOnly {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("* Be sure to verify event info with official sources!")
                                     }
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top, 8)
                                 }
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 8)
                             }
                             .padding(.horizontal)
-                        }
-                    else {
-                            // Group filtered events by day and iterate
-                            ForEach(Array(groupEventsByDay(filteredEvents).enumerated()), id: \.element.dayStart) { (index, dayGroup) in
-                                
-                                
-                                
+                        } else {
+                            ForEach(Array(groupPastEventsByDay(eventsToShow).enumerated()), id: \.element.dayStart) { index, dayGroup in
+                                // Group filtered events by day and iterate
                                 // Day header with conditional top padding
                                 Text(dayGroup.dayLabel)
                                     .font(.title)
@@ -185,208 +288,217 @@ struct EventsView: View {
                                     .frame(maxWidth: .infinity, alignment: .center)
                                 
                                 Divider()
-                                
-                                // For each event in that day...
-                                ForEach(dayGroup.events.indices, id: \.self) { i in
-                                    let event = dayGroup.events[i]
-                                    NavigationLink(destination: EventDetailView(event: event)) {
-                                        VStack(alignment: .center, spacing: 8) {
-                                            
-                                            if let label = listingLabel(for: event, recentlyAddedActive: recentlyAddedOnly) {
-                                                Text(label)
-                                                    .font(.footnote)
-                                                    .foregroundColor(.secondary)
-                                                    .italic()
-                                            }
-                                            
-                                            if let venue = event.venue {
-                                                let venueName = venue.name ?? "Unknown"
-                                                // Use a regex to find text in parentheses
-                                                if let range = venueName.range(of: #"(\(.*\))"#, options: .regularExpression) {
-                                                    let mainText = String(venueName[..<range.lowerBound])
-                                                    let parenText = String(venueName[range])
-                                                    // Concatenate two Text views with different fonts
-                                                    (Text(mainText)
-                                                        .font(.title)
-                                                     + Text(parenText)
-                                                        .font(.footnote))
-                                                    .multilineTextAlignment(.center)
-                                                } else {
-                                                    Text(venueName)
-                                                        .font(.title)
+                                    // For each event in that day...
+                                    ForEach(dayGroup.events.indices, id: \.self) { i in
+                                        let event = dayGroup.events[i]
+                                        NavigationLink(destination: EventDetailView(event: event)) {
+                                            VStack(alignment: .center, spacing: 8) {
+                                                
+                                                if let label = listingLabel(for: event, recentlyAddedActive: recentlyAddedOnly) {
+                                                    Text(label)
+                                                        .font(.footnote)
+                                                        .foregroundColor(.secondary)
+                                                        .italic()
+                                                }
+                                                
+                                                if let venue = event.venue {
+                                                    let venueName = venue.name ?? "Unknown"
+                                                    // Use a regex to find text in parentheses
+                                                    if let range = venueName.range(of: #"(\(.*\))"#, options: .regularExpression) {
+                                                        let mainText = String(venueName[..<range.lowerBound])
+                                                        let parenText = String(venueName[range])
+                                                        // Concatenate two Text views with different fonts
+                                                        (Text(mainText)
+                                                            .font(.title)
+                                                         + Text(parenText)
+                                                            .font(.footnote))
                                                         .multilineTextAlignment(.center)
+                                                    } else {
+                                                        Text(venueName)
+                                                            .font(.title)
+                                                            .multilineTextAlignment(.center)
+                                                    }
                                                 }
-                                            }
-                                            
-                                            if let artists = event.artists, !artists.isEmpty {
-                                                let artistLine = artists.enumerated().map { index, artist -> Text in
-                                                    var t = Text(artist.name)
-
-                                                    if artist.location != "RGV" {
-                                                        t = t + Text(",\(artist.location.uppercased())")
-                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                                            .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
-                                                    }
-
-                                                    if artist.debut ?? false {
-                                                        t = t + Text(",DEBUT")
-                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
-                                                    }
-
-                                                    if artist.albumDebut ?? false {
-                                                        t = t + Text(" ,ALBUM DEBUT")
-                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
-                                                    }
-
-                                                    if artist.rgvDebut ?? false {
-                                                        t = t + Text(",RGV DEBUT")
-                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
-                                                    }
-                                                    
-                                                    if artist.comeback ?? false {
-                                                        t = t + Text(",COMEBACK SHOW")
-                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
-                                                    }
-                                                    if artist.lastShow ?? false {
-                                                        t = t + Text(",LAST SHOW")
-                                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                                            .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
-                                                    }
-
-                                                    // Add separator if not last
-                                                    if index < artists.count - 1 {
-                                                        t = t + Text(" · ")
-                                                    }
-
-                                                    return t
-                                                }.reduce(Text(""), +)
-
-                                                artistLine
-                                                    .lineSpacing(15)
-                                                    .multilineTextAlignment(.center)
-                                                    .frame(maxWidth: .infinity, alignment: .center)
-                                            }
-                                            
-                                            // Promoter
-                                            if let promoter = event.promoter {
-                                                Divider()
-                                                    .frame(width: 50, height: 1)
-                                                    .background(Color.gray)
-                                                    .padding(.vertical, 8)
                                                 
-                                                Text(promoter.name ?? "Unknown")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            
-                                            // Flyer link, ticket link
-                                            HStack(spacing: 32) {
-                                                if let flyerLink = event.flyer,
-                                                   flyerLink.lowercased() != "pending",
-                                                   let url = URL(string: flyerLink) {
-                                                    Link(destination: url) {
-                                                        ZStack {
-                                                            Image(systemName: "doc.text.fill")
-                                                                .resizable()
-                                                                .aspectRatio(contentMode: .fit)
+                                                if let artists = event.artists, !artists.isEmpty {
+                                                    let artistLine = artists.enumerated().map { index, artist -> Text in
+                                                        var t = Text(artist.name)
+                                                        
+                                                        if artist.location != "RGV" {
+                                                            t = t + Text(",\(artist.location.uppercased())")
+                                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                                .foregroundColor(Color(red: 0.58, green: 0.44, blue: 0.86))
                                                         }
-                                                        .frame(width: 24, height: 24)
+                                                        
+                                                        if artist.debut ?? false {
+                                                            t = t + Text(",DEBUT")
+                                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                                .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                        }
+                                                        
+                                                        if artist.albumDebut ?? false {
+                                                            t = t + Text(" ,ALBUM DEBUT")
+                                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                                .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                        }
+                                                        
+                                                        if artist.rgvDebut ?? false {
+                                                            t = t + Text(",RGV DEBUT")
+                                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                                .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                        }
+                                                        
+                                                        if artist.comeback ?? false {
+                                                            t = t + Text(",COMEBACK SHOW")
+                                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                                .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                        }
+                                                        if artist.lastShow ?? false {
+                                                            t = t + Text(",LAST SHOW")
+                                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                                .foregroundColor(Color(red: 0.34, green: 0.72, blue: 0.67))
+                                                        }
+                                                        
+                                                        // Add separator if not last
+                                                        if index < artists.count - 1 {
+                                                            t = t + Text(" · ")
+                                                        }
+                                                        
+                                                        return t
+                                                    }.reduce(Text(""), +)
+                                                    
+                                                    artistLine
+                                                        .lineSpacing(15)
+                                                        .multilineTextAlignment(.center)
+                                                        .frame(maxWidth: .infinity, alignment: .center)
+                                                }
+                                                
+                                                // Promoter(s)
+                                                if let promoter1 = event.promoter {
+                                                    Divider()
+                                                        .frame(width: 50, height: 1)
+                                                        .background(Color.gray)
                                                         .padding(.vertical, 8)
-                                                        .foregroundColor(.secondary)
-                                                    }
-                                                }
-                                                
-                                                if let ticketsLink = event.tickets,
-                                                   ticketsLink.lowercased() != "pending",
-                                                   let url = URL(string: ticketsLink) {
-                                                    Link(destination: url) {
-                                                        Image(systemName: "ticket.fill")
-                                                            .resizable()
-                                                            .frame(width: 24, height: 24)
-                                                            .padding(.vertical, 8)
-                                                            .foregroundColor(.secondary)
-                                                    }
-                                                }
-                                            }
-                                            
-                                            // Row for door time, show time, cover
-                                            HStack(spacing: 3) {
-                                                if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }),
-                                                   let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
-                                                    Text("doors \(doorStr), \(showStr)")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                } else if let doorStr = event.doorTime.flatMap({ formatAsLocalTime($0) }) {
-                                                    Text("doors \(doorStr)")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                } else if let showStr = event.dateTime.flatMap({ formatAsLocalTime($0) }) {
-                                                    Text(showStr)
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                                
-                                                if let showStr = event.dateTime.flatMap({ formatAsMonthDay($0) }) {
-                                                    Text("·")
-                                                    Text(showStr)
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                                if let cover = event.cover {
-                                                    Text("·")
-                                                    if cover == 0 {
-                                                        Text("No Cover")
+
+                                                    // Combine primary and secondary promoters if available
+                                                    let name1 = promoter1.name ?? "Unknown"
+                                                    if let promoter2 = event.promoter2 {
+                                                        let name2 = promoter2.name ?? "Unknown"
+                                                        Text("\(name1) & \(name2)")
                                                             .font(.subheadline)
                                                             .foregroundColor(.secondary)
                                                     } else {
-                                                        Text("$\(cover)")
+                                                        Text(name1)
                                                             .font(.subheadline)
                                                             .foregroundColor(.secondary)
                                                     }
                                                 }
+                                                
+                                                // Flyer link, ticket link
+                                                HStack(spacing: 32) {
+                                                    if let flyerLink = event.flyer,
+                                                       flyerLink.lowercased() != "pending",
+                                                       let url = URL(string: flyerLink) {
+                                                        Link(destination: url) {
+                                                            ZStack {
+                                                                Image(systemName: "doc.text.fill")
+                                                                    .resizable()
+                                                                    .aspectRatio(contentMode: .fit)
+                                                            }
+                                                            .frame(width: 24, height: 24)
+                                                            .padding(.vertical, 8)
+                                                            .foregroundColor(.secondary)
+                                                        }
+                                                    }
+                                                    
+                                                    if let ticketsLink = event.tickets,
+                                                       ticketsLink.lowercased() != "pending",
+                                                       let url = URL(string: ticketsLink) {
+                                                        Link(destination: url) {
+                                                            Image(systemName: "ticket.fill")
+                                                                .resizable()
+                                                                .frame(width: 24, height: 24)
+                                                                .padding(.vertical, 8)
+                                                                .foregroundColor(.secondary)
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                // Row for door time, show time, cover
+                                                // just above your HStack:
+                                                let doorStr  = event.doorTime.flatMap(formatAsLocalTime)
+                                                let showStr  = event.dateTime.flatMap(formatAsLocalTime)
+                                                let monthDay = event.dateTime.flatMap(formatAsMonthDay)
+
+                                                HStack(spacing: 3) {
+                                                    // 1) doors + show
+                                                    if let door = doorStr, let show = showStr {
+                                                        Text("doors \(door), \(show)")
+                                                            .font(.subheadline).foregroundColor(.secondary)
+                                                    } else if let door = doorStr {
+                                                        Text("doors \(door)")
+                                                            .font(.subheadline).foregroundColor(.secondary)
+                                                    } else if let show = showStr {
+                                                        Text(show)
+                                                            .font(.subheadline).foregroundColor(.secondary)
+                                                    }
+
+                                                    // 2) month-day always shown if available, but only prefix “·” when something preceded it
+                                                    if let month = monthDay {
+                                                        if doorStr != nil || showStr != nil {
+                                                            Text("·")
+                                                        }
+                                                        Text(month)
+                                                            .font(.subheadline).foregroundColor(.secondary)
+                                                    }
+
+                                                    // 3) cover: only prefix “·” if *anything* came before
+                                                    if let cover = event.cover {
+                                                        if doorStr != nil || showStr != nil || monthDay != nil {
+                                                            Text("·")
+                                                        }
+                                                        if cover == 0 {
+                                                            Text("No Cover")
+                                                                .font(.subheadline).foregroundColor(.secondary)
+                                                        } else {
+                                                            Text("$\(cover)")
+                                                                .font(.subheadline).foregroundColor(.secondary)
+                                                        }
+                                                    }
+                                                }
+                                                .frame(maxWidth: .infinity, alignment: .center)
+                                                
+                                                // Address
+                                                if let venue = event.venue,
+                                                   let city = venue.city,
+                                                   let address = venue.address {
+                                                    Button(action: {
+                                                        openInMaps(address: address, city: city)
+                                                    }) {
+                                                        Text("\(address), \(city)")
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.secondary) // make it look tappable
+                                                            .multilineTextAlignment(.center)
+                                                            .padding(.bottom, 15)
+                                                    }
+                                                }
+                                                
+                                                
+                                                Divider()
                                             }
                                             .frame(maxWidth: .infinity, alignment: .center)
-                                            
-                                            // Address
-                                            if let venue = event.venue,
-                                               let city = venue.city,
-                                               let address = venue.address {
-                                                Button(action: {
-                                                    openInMaps(address: address, city: city)
-                                                }) {
-                                                    Text("\(address), \(city)")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary) // make it look tappable
-                                                        .multilineTextAlignment(.center)
-                                                        .padding(.bottom, 50)
-                                                }
-                                            }
-                                            
-                                            
-                                            Divider()
                                         }
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                        .padding(.vertical, 16)
                                     }
-                                }
                             }
                             
-                        if !viewModel.isLoading && !viewModel.events.isEmpty {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("* Start times might vary (e.g., punk time)")
-                                if AuthManager.shared.user == nil || AuthManager.shared.user?.plus == false {
-                                    Text("* See Rarelygroovy+ for our full event list")
+                            if !viewModel.isLoading && !viewModel.events.isEmpty && !showPastEventsOnly {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("* Be sure to verify event info with official sources!")
                                 }
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                        }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -395,6 +507,11 @@ struct EventsView: View {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("UserDidPlusify"))) { _ in
                     viewModel.fetchEvents(userInitiated: false)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("UserDidLogout"))) { _ in
+                    // reset back to free‐list mode
+                    showPastEventsOnly = false
+                    viewModel.fetchEvents()  // optional: reload free week
                 }
             }
         }
@@ -406,7 +523,10 @@ struct EventsView: View {
         .refreshable {
             viewModel.fetchEvents(userInitiated: true)
         }
-
+        .sheet(isPresented: $showPlusOverlay) {
+          EventsRarelygroovyPlusOverlay(statsVM: statsVM, userIsSignedIn: AuthManager.shared.user != nil)
+        }
+        
     }
     
     
@@ -417,7 +537,7 @@ struct EventsView: View {
             return colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3)
         }
     }
-
+    
     func chipForeground(isSelected: Bool) -> Color {
         if isSelected {
             return colorScheme == .dark ? Color.black : Color.white
@@ -425,7 +545,7 @@ struct EventsView: View {
             return colorScheme == .dark ? Color.white : Color.primary
         }
     }
-
+    
     
     // Dictionary mapping top-level genres to subgenres
     let genreMapping: [String: [String]] = [
@@ -512,10 +632,10 @@ struct EventsView: View {
     }
     func sanitize(_ string: String) -> String {
         return string.folding(options: .diacriticInsensitive, locale: .current)
-                     .lowercased()
-                     .components(separatedBy: CharacterSet.punctuationCharacters)
-                     .joined()
-                     .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .components(separatedBy: CharacterSet.punctuationCharacters)
+            .joined()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
     // Helper: parse ISO8601 string for event creation dates
     private func parseCreatedAt(_ isoString: String) -> Date? {
@@ -535,9 +655,9 @@ struct EventsView: View {
             } ?? false
             
             return venueName.localizedStandardContains(sanitize(trimmedQuery))
-                || promoterName.localizedStandardContains(sanitize(trimmedQuery))
-                || cityName.localizedStandardContains(sanitize(trimmedQuery))
-                || artistMatch
+            || promoterName.localizedStandardContains(sanitize(trimmedQuery))
+            || cityName.localizedStandardContains(sanitize(trimmedQuery))
+            || artistMatch
         }
         
         // Filter for non-RGV if active
@@ -574,7 +694,7 @@ struct EventsView: View {
                 let venueDebut = event.venue?.debut ?? false
                 let promoterDebut = event.promoter?.debut ?? false
                 let artistDebut = event.artists?.contains {
-                    ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false)
+                    ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false) || ($0.lastShow ?? false)
                 } ?? false
                 return venueDebut || promoterDebut || artistDebut
             }
@@ -588,7 +708,7 @@ struct EventsView: View {
             let venueDebut = event.venue?.debut ?? false
             let promoterDebut = event.promoter?.debut ?? false
             let artistDebut = event.artists?.contains {
-                ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false)
+                ($0.debut ?? false) || ($0.albumDebut ?? false) || ($0.rgvDebut ?? false) || ($0.lastShow ?? false)
             } ?? false
             return venueDebut || promoterDebut || artistDebut
         }
@@ -628,6 +748,32 @@ struct EventsView: View {
         
         return results
     }
+    /// Groups events by day **in the order they appear** in the array,
+    /// rather than sorting them.
+    private func groupPastEventsByDay(_ events: [Event]) -> [DayGroup] {
+        var dict = [Date: [Event]]()
+        var dayOrder = [Date]()
+        
+        // Iterate in the array’s order
+        for event in events {
+            guard let iso = event.dateTime,
+                  let date = parseISODate(iso) else { continue }
+            let dayStart = startOfDay(for: date)
+            if dict[dayStart] == nil {
+                dayOrder.append(dayStart)
+            }
+            dict[dayStart, default: []].append(event)
+        }
+        
+        // Build DayGroups in the same day order
+        return dayOrder.map { day in
+            DayGroup(
+                dayStart: day,
+                dayLabel: dayLabel(for: day),
+                events: dict[day]!
+            )
+        }
+    }
     // Parse an ISO8601 date
     private func parseISODate(_ isoString: String) -> Date? {
         let isoFormatter = ISO8601DateFormatter()
@@ -642,26 +788,38 @@ struct EventsView: View {
     // Convert a date to "Today", "Tomorrow", or "EEEE, MMMM d"
     private func dayLabel(for day: Date) -> String {
         let calendar = Calendar.current
-        let now = startOfDay(for: Date())
-        let daysAway = calendar.dateComponents([.day], from: now, to: day).day ?? 0
+        let today = startOfDay(for: Date())
+        let eventYear = calendar.component(.year, from: day)
+        let currentYear = calendar.component(.year, from: today)
 
-        if daysAway == 0 {
-            return "Today"
-        } else if daysAway == 1 {
-            return "Tomorrow"
-        } else if daysAway <= 6 {
+        if eventYear < currentYear {
             let df = DateFormatter()
-            df.dateFormat = "EEEE" // just weekday
-            df.locale = Locale(identifier: "en_US_POSIX")
-            return df.string(from: day)
-        } else {
-            let df = DateFormatter()
-            df.dateFormat = "EEEE, MMMM d"
+            df.dateFormat = "EEEE, MM/dd/yyyy"
             df.locale = Locale(identifier: "en_US_POSIX")
             return df.string(from: day)
         }
+
+        let daysAway = calendar.dateComponents([.day], from: today, to: day).day ?? 0
+
+        let dfWeekday = DateFormatter()
+        dfWeekday.dateFormat = "EEEE"
+        dfWeekday.locale = Locale(identifier: "en_US_POSIX")
+
+        let dfFullNoYear = DateFormatter()
+        dfFullNoYear.dateFormat = "EEEE, MMMM d"
+        dfFullNoYear.locale = Locale(identifier: "en_US_POSIX")
+
+        switch daysAway {
+        case 0: return "Today"
+        case 1: return "Tomorrow"
+        case -1: return "Yesterday"
+        case 2...6: return dfWeekday.string(from: day)
+        case -6...(-2): return "Last " + dfWeekday.string(from: day)
+        default: return dfFullNoYear.string(from: day)
+        }
     }
 }
+
 
 // MARK: - DayGroup model
 fileprivate struct DayGroup {
@@ -745,4 +903,279 @@ func isElevenFiftyNinePM(_ isoString: String) -> Bool {
         return components.hour == 23 && components.minute == 59
     }
     return false
+}
+
+import SwiftUI
+
+struct EventsRarelygroovyPlusOverlay: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.colorScheme) private var colorScheme
+  @ObservedObject var statsVM: PlusStatsViewModel
+    @EnvironmentObject var store: Store
+
+    let userIsSignedIn: Bool
+
+
+  var body: some View {
+    ZStack {
+      Color(colorScheme == .dark ? .black : .white)
+        .ignoresSafeArea()
+        
+        ScrollView {
+            VStack(spacing: 24) {
+              HStack {
+                Spacer()
+                Button { dismiss() } label: {
+                  Image(systemName: "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+                }
+              }
+                
+                VStack(spacing: 8) {
+                  Image(colorScheme == .dark ? "logo-bw" : "logo-wb")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                  Text("Upgrade to Rarelygroovy+")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                }
+
+              // event perks first, then artist perks
+                VStack {
+                    PerkSection(title: "Events",  perks: statsVM.eventPerks)
+                    PerkSection(title: "Artist Directory", perks: statsVM.artistPerks)
+                      
+                  Text("* Numbers continue to grow as we add events and artists to Rarelygroovy!")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: 340, alignment: .leading)
+                }
+
+
+                Group {
+                  if userIsSignedIn {
+                      VStack(spacing: 8) {
+                          Button("upgrade for \(store.products[0].displayPrice)") {
+                              Task {
+                                  try await store.purchase(store.products[0])
+                              }
+                          }
+                          .frame(maxWidth: .infinity)
+                          .padding()
+                          .background(colorScheme == .dark ? Color.white : Color.black)
+                          .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
+                          .cornerRadius(12)
+                          
+                          Text("(one time purchase)")
+                              .font(.footnote)
+                              .foregroundColor(.white)
+                      }
+                  } else {
+                    Text("Log in or sign up for Rarelygroovy to upgrade")
+                      .font(.body)
+                      .foregroundColor(.secondary)
+                      .frame(maxWidth: .infinity)
+                      .multilineTextAlignment(.center)
+                      .padding()
+                      .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                          .stroke(Color.secondary, lineWidth: 1)
+                      )
+                  }
+                }
+                .padding(.horizontal)
+              Spacer()
+            }
+            .padding()
+            .multilineTextAlignment(.center)
+        }
+    }
+    .onAppear { statsVM.fetchAll() }
+  }
+}
+
+// keep your existing PerkCard and Perk definitions:
+struct PerkCard: View {
+    let perks: [Perk]
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ForEach(perks) { perk in
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 16, weight: .semibold))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(perk.title)
+                            .font(.body)
+                            .fontWeight(.semibold)
+                        if let desc = perk.description {
+                            Text(desc)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.leading)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(colorScheme == .dark ? .black : .white))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white, lineWidth: 2)
+        )
+        .cornerRadius(12)
+    }
+}
+struct Perk: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String?
+}
+
+final class PlusStatsViewModel: ObservableObject {
+  @Published var extraEvents: Int?
+  @Published var furthestMonth: String?
+    @Published var pastEvents: Int?
+  @Published var inactiveLocalArtists: Int?
+  @Published var touringArtists: Int?
+
+  private var hasFetched = false
+
+  func fetchAll() {
+    guard !hasFetched
+    else { return }
+    hasFetched = true
+
+    fetchEventStats()
+    fetchArtistStats()
+  }
+
+  // … your fetchEventStats()/fetchArtistStats() …
+    /// Call when the Events sheet appears
+    func fetchEventStats() {
+        print(">> fetchEventStats called")
+
+        let url = URL(string: "https://enm-project-production.up.railway.app/api/enmEvents/number-of-events-passed-free-limit")!
+        URLSession.shared.dataTask(with: url) { data, _, error in
+          if let e = error {
+            print("⚠️ eventStats error:", e)
+            return
+          }
+          guard let data = data else {
+            print("⚠️ eventStats no data")
+            return
+          }
+          // for debugging, dump the raw JSON:
+          print("📥 eventStats raw:", String(decoding: data, as: UTF8.self))
+
+            struct Resp: Decodable { let extraEvents: Int; let furthestMonth: String?; let pastEvents: Int }
+          if let r = try? JSONDecoder().decode(Resp.self, from: data) {
+            print("✅ eventStats decoded:", r)
+            DispatchQueue.main.async {
+              self.extraEvents   = r.extraEvents
+              self.furthestMonth = r.furthestMonth
+                self.pastEvents    = r.pastEvents
+            }
+          } else {
+            print("⚠️ eventStats decode failure")
+          }
+        }.resume()
+      }
+    /// Call when the Artists sheet appears
+    func fetchArtistStats() {
+        let url = URL(string: "https://enm-project-production.up.railway.app/api/artists/local-inactive-count")!
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            guard let data = data else { return }
+            struct Resp: Decodable { let inactiveLocalArtists: Int; let touringArtists: Int }
+            if let r = try? JSONDecoder().decode(Resp.self, from: data) {
+                DispatchQueue.main.async {
+                    self.inactiveLocalArtists = r.inactiveLocalArtists
+                    self.touringArtists       = r.touringArtists
+                }
+            }
+        }.resume()
+    }
+
+  // ——— New dynamic Perk lists ———
+  var eventPerks: [Perk] {
+    [
+      Perk(
+        title: "Remove weekly limit",
+        description: {
+          guard let extra = extraEvents,
+                let month = furthestMonth
+          else { return "Loading event stats…" }
+          return "Access to an additional *\(extra) upcoming events through \(month)."
+        }()
+      ),
+      Perk(
+        title: "See past events",
+        description: {
+            guard let pastEvents = pastEvents
+            else { return "Loading event stats…" }
+            return "Access to an additional *\(pastEvents) past events dating back to early 2023"
+          }()
+      )
+    ]
+  }
+
+  var artistPerks: [Perk] {
+    [
+      Perk(
+        title: "See past artists",
+        description: {
+          guard let cnt = inactiveLocalArtists else { return "Loading artist stats…" }
+          return "Access to *\(cnt) inactive RGV artists dating back to 1985."
+        }()
+      ),
+      Perk(
+        title: "See touring artists",
+        description: {
+          guard let touring = touringArtists else { return "Loading artist stats…" }
+          return "Access to *\(touring) artists that’ve recently toured the RGV."
+        }()
+      )
+    ]
+  }
+}
+
+// your response structs:
+struct FreeExtraCountResponse: Decodable {
+  let extraEvents: Int
+  let furthestMonth: String?
+    let pastEvents: Int
+}
+struct LocalVsTouringCountResponse: Decodable {
+    let inactiveLocalArtists: Int
+    let touringArtists:       Int
+}
+
+struct PerkSection: View {
+  @Environment(\.colorScheme) private var colorScheme
+  let title: String
+  let perks: [Perk]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text(title)
+        .font(.headline)
+        .foregroundColor(.secondary)
+
+      PerkCard(perks: perks)
+        // force all cards to be the same width:
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(colorScheme == .dark ? .black : .white))
+    }
+    .padding(.vertical, 8)
+    .frame(maxWidth: .infinity) // <-- 👈 this is the pinning line
+  }
 }

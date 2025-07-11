@@ -19,11 +19,12 @@ struct Artist: Identifiable, Codable {
     let end2: String?
     let status2: String?
     let comeback: Bool?
+    let womanfronted: Bool?
 
 
 
     enum CodingKeys: String, CodingKey {
-        case _id, name, link, location, medium, status, links, debut, albumDebut, rgvDebut, lastShow, start, end, genre, start2, end2, status2, comeback
+        case _id, name, link, location, medium, status, links, debut, albumDebut, rgvDebut, lastShow, start, end, genre, start2, end2, status2, comeback, womanfronted
     }
 
     private enum OIDKeys: String, CodingKey {
@@ -59,6 +60,7 @@ struct Artist: Identifiable, Codable {
         self.end2 = try? container.decode(String.self, forKey: .end2)
         self.status2 = try? container.decode(String.self, forKey: .status2)
         self.comeback = try? container.decode(Bool.self, forKey: .comeback)
+        self.womanfronted = try? container.decode(Bool.self, forKey: .womanfronted)
 
 
     }
@@ -83,5 +85,7 @@ struct Artist: Identifiable, Codable {
         try container.encodeIfPresent(end2, forKey: .end2)
         try container.encodeIfPresent(status2, forKey: .status2)
         try container.encodeIfPresent(comeback, forKey: .comeback)
+        try container.encodeIfPresent(womanfronted, forKey: .womanfronted)
+
     }
 }
