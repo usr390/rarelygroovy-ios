@@ -1,0 +1,1 @@
+This is a mobile app that mirrors the functionality originally introduced in Rarelygroovy.com (the web app). The purpose is to bring the Rarelygroovy experience to iOS users, making it easy to browse and track local music events on the go 
